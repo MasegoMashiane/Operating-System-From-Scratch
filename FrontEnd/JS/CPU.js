@@ -34,7 +34,17 @@ const cpu = {
     
 
 //For conditional branching (i.e., result of comparison)
-    flag: null 
+    flag: null,
+
+//Adding file system to cpu
+//Directories are objects
+//Files are strings(or any data)
+//Supports commands like mkdir, cd, ls, write, read, and rm
+    fs: {
+        root:{}
+    },
+//current working directory path (e.g., ['home','user'])
+    cwd: []
 };
 
 
@@ -78,8 +88,53 @@ const ctors = {
 //Sets the instruction pointer
     copy2ip: val => cpu.ip = val,
 
+//Adding file/folder Operations 
 
-
+    mkdir: name =>{
+        const dir = getDir();
+        if (dir[name])
+            throw new Error(`directory already exists: ${name}`)
+        dir[name] = {}
+        cpu.ip++
+    },
+    cd: name =>{
+        if (name === ".."){
+            cpu.cwd.pop();
+        }
+        else{
+            const dir = getDir()
+            if (!(name in dir) || typeof dir[name] !== "object"){
+                throw new Error(`No such directory: ${name}`)
+            }
+            cpu.cwd.push(name)
+        }
+        cpu.ip++
+    },
+    ls: () =>{
+        const dir = getDir()
+        console.log("folderIcon", "/" + cpu.cwd.join("/"))
+        for (const key in dir){
+            console.log(typeof dir[key] === "object" ? `[DIR] ${key}`: `${key}`)
+        }
+        cpu.ip++
+    },
+    write: ({name, content})=> {
+        const dir = getDir()
+        dir[name] = content
+        cpu.ip++
+    },
+    read: name => {
+        const dir = getDir()
+        if (!(name in dir)) throw new Error(`no such file: ${name}`)
+        console.log(`{name}: ${dir[name]}`)
+        cpu.ip++
+    },
+    rm: name => {
+        const dir = getDir()
+        if (!(name in dir)) throw new error(`no such file/folder: ${name}`)
+        delete dir[name]
+        cpu.ip++
+    },
 //Comparisons
     cmpax: val => {
         if(cpu.ax === val){
