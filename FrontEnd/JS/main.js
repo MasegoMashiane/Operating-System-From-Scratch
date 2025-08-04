@@ -42,10 +42,10 @@ function runCommnand(cmd){
 function captureOutput(fn){
     const originalLog = console.log
     console.log = (...arg) => printToTerminal(arg.join(" "))
-        try{
-            fn()
-        }
-        finally{
-            console.log = originalLog
-        }
+    try{
+        fn()
+    }
+    finally{
+        console.log = originalLog
+    }
 }
