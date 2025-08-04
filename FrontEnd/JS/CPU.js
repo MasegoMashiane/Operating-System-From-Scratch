@@ -1,9 +1,14 @@
+import { getDir } from "./filesystem.js";
+import { filesystemOps } from "./filesystem.js";
+import { memoryOperations } from "./memory.js";
+
 // CPU Interpreter
 
 // Defining CPU STATE
 //Check for **** 
 
-const cpu = {
+
+export const cpu = {
 // General purpose registers
 // Basically small storage boxes
 // They hold values temporarily during operations
@@ -12,7 +17,7 @@ const cpu = {
     cx: 0,
 
 
-// Stack pointer(SP) => Keeps track of wehre the top of the stack is
+// Stack pointer(SP) => Keeps track of where the top of the stack is
 // Stack is used for things like function calls, return addresses, 
 // or temporary storage
 // eg. cpu.sp = 10 : SP is pointing to memory address 10
@@ -40,11 +45,13 @@ const cpu = {
 //Directories are objects
 //Files are strings(or any data)
 //Supports commands like mkdir, cd, ls, write, read, and rm
-    fs: {
+    
+fs: {
         root:{}
     },
 //current working directory path (e.g., ['home','user'])
-    cwd: []
+cwd: []
+
 };
 
 
@@ -65,7 +72,7 @@ const cpu = {
 // call it like:
 
 
-const ctors = {
+export const ctors = {
 //These are data transfer instructions, moving a value to specific registers
 //Storing values into registers
     copy2ax: val => {
@@ -90,51 +97,7 @@ const ctors = {
 
 //Adding file/folder Operations 
 
-    mkdir: name =>{
-        const dir = getDir();
-        if (dir[name])
-            throw new Error(`directory already exists: ${name}`)
-        dir[name] = {}
-        cpu.ip++
-    },
-    cd: name =>{
-        if (name === ".."){
-            cpu.cwd.pop();
-        }
-        else{
-            const dir = getDir()
-            if (!(name in dir) || typeof dir[name] !== "object"){
-                throw new Error(`No such directory: ${name}`)
-            }
-            cpu.cwd.push(name)
-        }
-        cpu.ip++
-    },
-    ls: () =>{
-        const dir = getDir()
-        console.log("folderIcon", "/" + cpu.cwd.join("/"))
-        for (const key in dir){
-            console.log(typeof dir[key] === "object" ? `[DIR] ${key}`: `${key}`)
-        }
-        cpu.ip++
-    },
-    write: ({name, content})=> {
-        const dir = getDir()
-        dir[name] = content
-        cpu.ip++
-    },
-    read: name => {
-        const dir = getDir()
-        if (!(name in dir)) throw new Error(`no such file: ${name}`)
-        console.log(`{name}: ${dir[name]}`)
-        cpu.ip++
-    },
-    rm: name => {
-        const dir = getDir()
-        if (!(name in dir)) throw new error(`no such file/folder: ${name}`)
-        delete dir[name]
-        cpu.ip++
-    },
+   
 //Comparisons
     cmpax: val => {
         if(cpu.ax === val){
@@ -195,54 +158,6 @@ const ctors = {
         if (cpu.flag === "lt"){
             cpu.ip = addr
         }
-    },
-    
-//Memory system for OS
-//Read from memory into registers
-//Write from registers into memory
-//print memory contents
-//validate memory bounds to avoid errors
-
-//Store value from register to memory
-    StoreMem: ({ addr, reg}) => {
-        if (addr >= 0 && addr < cpu.memory.length){
-            cpu.memory[addr] = cpu[reg];
-            cpu.ip++
-        }
-        else{
-            console.error("Memory write out of bounds:", addr)
-            cpu.halted = true
-        }
-    },
-//Load Value from memory to register
-    loadMem:({addr, reg}) => {
-        if (addr >= 0 && addr < cpu.memory.length){
-            cpu[reg] = cpu.memory[addr]
-            cpu.ip++
-        }
-        else{
-            console.error("Memory read out of bounds", addr)
-            cpu.halted = true
-        }
-    },
-
-//Print value at memory address
-    printMem: addr => {
-        if (addr >= 0 && addr < cpu.memory.length){
-            console.log(`Memory[${addr}] = `, cpu.memory[addr])
-            cpu.ip++
-        }
-        else{
-            console.error("Memory read out of bounds", addr)
-            cpu.halted = true
-        }
-    },
-
-//Zero out all memory (soft reset)
-    clearMem: () => {
-        cpu.memory.fill(0);
-        console.log("memory cleared")
-        cpu.ip++
     },
 
 //Register-to-register copy
@@ -509,7 +424,7 @@ function run (instructions) {
     while (cpu.ip < instructions.length && !cpu.halted){
         const instr = instructions[cpu.ip];
         const {op, arg} = instr;
-        const currentIp = cpu.ip
+        //const currentIp = cpu.ip
 
         if(ctors[op]){
             ctors[op](arg)
@@ -520,6 +435,9 @@ function run (instructions) {
     }
     console.log("Final CPU State:", cpu)
 }
+
+Object.assign(ctors, filesystemOps, getDir, memoryOperations)
+
 //test1
 //Infinite loop
 // const script = [
@@ -531,10 +449,13 @@ function run (instructions) {
 // ];
 // run(script)
 
+
+
+
 //test2
 //Math Operations
 // const mathProgram = [
-//     { op: "copy2ax", arg: 10 },    // ax = 10
+//     { op: "copy2ax", arg: 90 },    // ax = 10
 //     { op: "add2ax", arg: 5 },      // ax = 15
 //     { op: "mul2ax", arg: 2 },      // ax = 30
 //     { op: "sub2ax", arg: 4 },      // ax = 26
@@ -543,3 +464,119 @@ function run (instructions) {
 //     { op: "halt" }
 // ];
 // run(mathProgram)
+
+//test3
+//Memory Operations Test
+// const memoryTest = [
+//     // Load values into registers
+//     { op: "copy2ax", arg: 42 },        // ax = 42
+//     { op: "copy2bx", arg: 100 },       // bx = 100
+//     { op: "copy2cx", arg: 255 },       // cx = 255
+    
+//     // Store register values into memory
+//     { op: "StoreMem", arg: { addr: 0, reg: "ax" } },   // memory[0] = 42
+//     { op: "StoreMem", arg: { addr: 1, reg: "bx" } },   // memory[1] = 100
+//     { op: "StoreMem", arg: { addr: 2, reg: "cx" } },   // memory[2] = 255
+    
+//     // Print what we stored
+//     { op: "printMem", arg: 0 },        // Should show: Memory[0] = 42
+//     { op: "printMem", arg: 1 },        // Should show: Memory[1] = 100
+//     { op: "printMem", arg: 2 },        // Should show: Memory[2] = 255
+    
+//     // Clear registers to test loading
+//     { op: "copy2ax", arg: 0 },         // ax = 0
+//     { op: "copy2bx", arg: 0 },         // bx = 0
+//     { op: "copy2cx", arg: 0 },         // cx = 0
+    
+//     // Load values back from memory
+//     { op: "loadMem", arg: { addr: 0, reg: "ax" } },    // ax = memory[0] = 42
+//     { op: "loadMem", arg: { addr: 1, reg: "bx" } },    // bx = memory[1] = 100
+//     { op: "loadMem", arg: { addr: 2, reg: "cx" } },    // cx = memory[2] = 255
+    
+//     // Print registers to verify loading worked
+//     { op: "printax" },                 // Should show: AX: 42
+//     { op: "printbx" },                 // Should show: BX: 100
+//     { op: "printcx" },                 // Should show: CX: 255
+    
+//     // Test memory bounds (this should cause an error)
+//     // { op: "StoreMem", arg: { addr: 300, reg: "ax" } }, // Uncomment to test error handling
+    
+//     { op: "magicstr" },
+//     { op: "halt" }
+// ];
+// run(memoryTest)
+
+
+//test4
+// //File System Operations Test
+// const fileSystemTest = [
+//     // Create some directories
+//     { op: "mkdir", arg: "documents" },
+//     { op: "mkdir", arg: "photos" },
+//     { op: "mkdir", arg: "projects" },
+    
+//     // List root directory contents
+//     { op: "ls" },                      // Should show: documents, photos, projects
+    
+//     // Navigate into documents folder
+//     { op: "cd", arg: "documents" },
+    
+//     // Create files in documents
+//     { op: "write", arg: { name: "readme.txt", content: "Welcome to my OS!" } },
+//     { op: "write", arg: { name: "notes.txt", content: "Important notes here" } },
+    
+//     // Create a subdirectory
+//     { op: "mkdir", arg: "personal" },
+    
+//     // List documents directory
+//     { op: "ls" },                      // Should show: readme.txt, notes.txt, personal/
+    
+//     // Read a file
+//     { op: "read", arg: "readme.txt" }, // Should show file contents
+    
+//     // Navigate to subdirectory
+//     { op: "cd", arg: "personal" },
+    
+//     // Create file in subdirectory
+//     { op: "write", arg: { name: "diary.txt", content: "My personal thoughts" } },
+    
+//     // List subdirectory
+//     { op: "ls" },                      // Should show: diary.txt
+    
+//     // Navigate back to parent
+//     { op: "cd", arg: ".." },           // Back to documents/
+    
+//     // Navigate back to root
+//     { op: "cd", arg: ".." },           // Back to root/
+    
+//     // Navigate to projects folder
+//     { op: "cd", arg: "projects" },
+    
+//     // Create project files
+//     { op: "write", arg: { name: "main.js", content: "console.log('Hello World')" } },
+//     { op: "write", arg: { name: "package.json", content: '{"name": "my-project"}' } },
+    
+//     // List projects
+//     { op: "ls" },                      // Should show: main.js, package.json
+    
+//     // Read project file
+//     { op: "read", arg: "main.js" },
+    
+//     // Go back to root
+//     { op: "cd", arg: ".." },
+    
+//     // Final directory listing
+//     { op: "ls" },                      // Should show all root directories
+    
+//     // Test file deletion
+//     { op: "cd", arg: "photos" },
+//     { op: "write", arg: { name: "temp.jpg", content: "temporary image data" } },
+//     { op: "ls" },                      // Should show temp.jpg
+//     { op: "rm", arg: "temp.jpg" },     // Delete the file
+//     { op: "ls" },                      // Should be empty now
+    
+//     { op: "magicstr" },
+//     { op: "halt" }
+// ];
+
+// run(fileSystemTest);

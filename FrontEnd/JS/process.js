@@ -1,1 +1,1 @@
-//process manager
+//process management
