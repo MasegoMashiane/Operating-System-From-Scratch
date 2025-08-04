@@ -1,6 +1,7 @@
 import { getDir } from "./filesystem.js";
 import { filesystemOps } from "./filesystem.js";
 import { memoryOperations } from "./memory.js";
+import { ProcessInit } from "./process.js";
 
 // CPU Interpreter
 
@@ -437,7 +438,7 @@ function run (instructions) {
 }
 
 Object.assign(ctors, filesystemOps, getDir, memoryOperations)
-
+Object.assign(cpu, ProcessInit)
 //test1
 //Infinite loop
 // const script = [
