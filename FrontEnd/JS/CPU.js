@@ -1,7 +1,7 @@
 import { getDir } from "./filesystem.js";
 import { filesystemOps } from "./filesystem.js";
 import { memoryOperations } from "./memory.js";
-import { ProcessInit } from "./process.js";
+import { ProcessInit, processOp } from "./process.js";
 
 // CPU Interpreter
 
@@ -437,7 +437,7 @@ function run (instructions) {
     console.log("Final CPU State:", cpu)
 }
 
-Object.assign(ctors, filesystemOps, getDir, memoryOperations)
+Object.assign(ctors, filesystemOps, getDir, memoryOperations, processOp)
 Object.assign(cpu, ProcessInit)
 //test1
 //Infinite loop
