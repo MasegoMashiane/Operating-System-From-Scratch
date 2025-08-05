@@ -12,7 +12,7 @@ import { ctors } from "./CPU.js";
 //A basic scheduler decides who runs next
 // Each process is an object
 
-export const ProcessInit = {
+export const processInit = {
     processes: [],
     currentPID:  null,
     nextPID: 1
@@ -32,6 +32,8 @@ export const processOp = {
             }
         }
         cpu.processes.push(process)
+        process.pid
+        cpu.ip++
         return process.pid
     },
     
@@ -49,7 +51,30 @@ export const processOp = {
                 `PID: ${p.pid}, State: ${p.state}, IP: ${p.ip}`
             )
         });
+        cpu.ip++
     }
 }
 
 //Add a simple Scheduler
+export function schedule(){
+    const readyProcs = cpu.processes.filter(p => p.state === "ready")
+    for (const proc of readyProcs){
+        cpu.currentPID = proc.pid
+        const instr = proc.program[proc.ip]
+        if(!instr){
+            proc.state = "halted"
+            continue
+        }
+        try {
+            if (ctors[instr.op]){
+                ctors[instr.op](instr.arg)
+            }
+        }catch(e){
+            console.log(`Error in PID ${proc.pid}:`, e.message)
+        }
+        proc.ip++
+    }
+    cpu.ip++
+}
+//Runs periodically
+setInterval(schedule, 500)

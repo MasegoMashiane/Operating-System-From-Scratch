@@ -1,10 +1,9 @@
 import { getDir } from "./filesystem.js";
 import { filesystemOps } from "./filesystem.js";
 import { memoryOperations } from "./memory.js";
-import { ProcessInit, processOp } from "./process.js";
+import { processInit, processOp, schedule } from "./process.js";
 
 // CPU Interpreter
-
 // Defining CPU STATE
 //Check for **** 
 
@@ -437,8 +436,8 @@ function run (instructions) {
     console.log("Final CPU State:", cpu)
 }
 
-Object.assign(ctors, filesystemOps, getDir, memoryOperations, processOp)
-Object.assign(cpu, ProcessInit)
+Object.assign(ctors, filesystemOps, getDir, memoryOperations, processOp, schedule)
+Object.assign(cpu, processInit)
 //test1
 //Infinite loop
 // const script = [
@@ -581,3 +580,18 @@ Object.assign(cpu, ProcessInit)
 // ];
 
 // run(fileSystemTest);
+
+const prog1 = [
+    { op: "write", arg: { name: "p1.txt", content: "Process 1 reporting" } },
+    { op: "magicstr" },
+    { op: "halt" }
+  ];
+  
+//   const prog2 = [
+//     { op: "write", arg: { name: "p2.txt", content: "Process 2 here" } },
+//     { op: "magicstr" },
+//     { op: "halt" }
+//   ];
+  
+ctors.spawn(prog1);
+//ctors.spawn(prog2);
