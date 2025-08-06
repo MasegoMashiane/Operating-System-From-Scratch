@@ -2,6 +2,7 @@ import { getDir } from "./filesystem.js";
 import { filesystemOps } from "./filesystem.js";
 import { memoryOperations } from "./memory.js";
 import { processInit, processOp, schedule } from "./process.js";
+import { threadsInit } from "./threads.js";
 
 // CPU Interpreter
 // Defining CPU STATE
@@ -437,7 +438,7 @@ function run (instructions) {
 }
 
 Object.assign(ctors, filesystemOps, getDir, memoryOperations, processOp, schedule)
-Object.assign(cpu, processInit)
+Object.assign(cpu, processInit, threadsInit)
 //test1
 //Infinite loop
 // const script = [
