@@ -18,6 +18,7 @@ export const memoryOperations = {
             cpu.halted = true
         }
     },
+
     //Load Value from memory to register
     loadMem:({addr, reg}) => {
         if (addr >= 0 && addr < cpu.memory.length){
