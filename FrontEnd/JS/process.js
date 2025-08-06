@@ -137,14 +137,46 @@ function contextSwitch(fromPID, toPID){
     //load new process context
     const newProcess = cpu.processes.find(p => p.pid === toPID)
     if (newProcess && newProcess.state === "ready"){
+        //restore restore cpu state from process
         cpu.ax = newProcess.registers.ax
         cpu.bx = newProcess.registers.bx
         cpu.cx = newProcess.registers.cx
         cpu.sp = newProcess.registers.cx
+
+        //update process state
+        newProcess.state = "running"
+        cpu.currentPID = toPID
+
+        console.log(` Context loaded for PID ${toPID}`)
+
+        //execute one instruction for this process
+        executeProcessInstruction(newProcess)
     }
 }
 
 
+function executeProcessInstruction(process){
+    const instr = process= process.program[process.ip]
+
+    if(!instr){
+        //process completed
+        process.state = "terminated"
+        console.log(`Process ${process.pid} completed`)
+
+        //clear current PID if this was the running process
+        if (cpu.currentPID === process.pid){
+            cpu.currentPID = null
+        }
+        return
+    }
+    try{
+        //execute the instruction
+        if (ctors.Error){}
+    }
+    catch(e){
+        //
+    }
+}
 
 // It is like saving your progress in one game, then loading your progress
 // in another game.
@@ -152,7 +184,6 @@ function contextSwitch(fromPID, toPID){
 // Save the current process's state(reg, Ip, ...)
 // Load the next process's state
 // Resume execution from where the new process left off
-
 
 //Runs periodically
 setInterval(schedule, 500)
