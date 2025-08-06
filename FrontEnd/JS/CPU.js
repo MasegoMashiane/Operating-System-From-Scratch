@@ -577,17 +577,125 @@ Object.assign(cpu, processInit)
 
 // run(fileSystemTest);
 
-const prog1 = [
-    { op: "write", arg: { name: "p1.txt", content: "Process 1 reporting" } },
-    { op: "magicstr" },
-    { op: "halt" }
-  ];
+// const prog1 = [
+//     { op: "write", arg: { name: "p1.txt", content: "Process 1 reporting" } },
+//     { op: "magicstr" },
+//     { op: "halt" }
+//   ];
   
-  const prog2 = [
-    { op: "write", arg: { name: "p2.txt", content: "Process 2 here" } },
-    { op: "magicstr" },
-    { op: "halt" }
-  ];
+//   const prog2 = [
+//     { op: "write", arg: { name: "p2.txt", content: "Process 2 here" } },
+//     { op: "read", arg: "p2.txt" },
+//     { op: "magicstr" },
+//     { op: "halt" }
+//   ];
   
-ctors.spawn(prog1);
+//ctors.spawn(prog1);
 //ctors.spawn(prog2);
+
+
+// PROCESS HANDLING TEST 
+// console.log("🧪 Starting Process Handling Test...\n");
+
+// // Test 1: Basic Process Creation and Execution
+// const testProcess1 = [
+//     { op: "copy2ax", arg: 100 },
+//     { op: "printax" },
+//     { op: "write", arg: { name: "test1.txt", content: "Process 1 completed successfully" } },
+//     { op: "magicstr" },
+//     { op: "halt" }
+// ];
+
+// const testProcess2 = [
+//     { op: "copy2bx", arg: 200 },
+//     { op: "printbx" },
+//     { op: "write", arg: { name: "test2.txt", content: "Process 2 completed successfully" } },
+//     { op: "magicstr" },
+//     { op: "halt" }
+// ];
+
+// const testProcess3 = [
+//     { op: "copy2cx", arg: 300 },
+//     { op: "printcx" },
+//     { op: "mkdir", arg: "test_dir" },
+//     { op: "cd", arg: "test_dir" },
+//     { op: "write", arg: { name: "nested.txt", content: "File created by Process 3" } },
+//     { op: "magicstr" },
+//     { op: "halt" }
+// ];
+
+// // Test 2: Process with Memory Operations
+// const memoryTestProcess = [
+//     { op: "copy2ax", arg: 42 },
+//     { op: "StoreMem", arg: { addr: 10, reg: "ax" } },
+//     { op: "copy2ax", arg: 0 },
+//     { op: "loadMem", arg: { addr: 10, reg: "ax" } },
+//     { op: "printax" }, // Should print 42
+//     { op: "printMem", arg: 10 },
+//     { op: "magicstr" },
+//     { op: "halt" }
+// ];
+
+// // Test 3: Process with Arithmetic and Comparisons
+// const arithmeticTestProcess = [
+//     { op: "copy2ax", arg: 10 },
+//     { op: "copy2bx", arg: 5 },
+//     { op: "copybx2cx" },
+//     { op: "cmpax", arg: 10 },
+//     { op: "printax" },
+//     { op: "printbx" },
+//     { op: "printcx" },
+//     { op: "magicstr" },
+//     { op: "halt" }
+// ];
+
+// // Function to run process tests
+// function runProcessTests() {
+//     console.log("📋 Initial CPU State:");
+//     console.log(`Processes: ${cpu.processes.length}`);
+//     console.log(`Current PID: ${cpu.currentPID}`);
+//     console.log(`Next PID: ${cpu.nextPID}\n`);
+
+//     // Spawn test processes
+//     console.log("🚀 Spawning test processes...");
+//     const pid1 = ctors.spawn(testProcess1);
+//     const pid2 = ctors.spawn(testProcess2);
+//     const pid3 = ctors.spawn(testProcess3);
+//     const pid4 = ctors.spawn(memoryTestProcess);
+//     const pid5 = ctors.spawn(arithmeticTestProcess);
+
+//     console.log(`✅ Spawned 5 processes with PIDs: ${pid1}, ${pid2}, ${pid3}, ${pid4}, ${pid5}\n`);
+
+//     // Display process list
+//     console.log("📊 Process Status:");
+//     ctors.ps();
+
+//     // Test process killing (after some time)
+//     setTimeout(() => {
+//         console.log(`\n🔪 Killing process ${pid2}...`);
+//         try {
+//             ctors.kill(pid2);
+//             console.log(`✅ Process ${pid2} killed successfully`);
+//         } catch (e) {
+//             console.log(`❌ Error killing process: ${e.message}`);
+//         }
+
+//         console.log("\n📊 Updated Process Status:");
+//         ctors.ps();
+//     }, 3000);
+
+//     // Final status check
+//     setTimeout(() => {
+//         console.log("\n🏁 Final Process Test Results:");
+//         console.log("Files created during test:");
+//         ctors.ls();
+        
+//         console.log("\nMemory state after tests:");
+//         ctors.printMem(10);
+        
+//         console.log("\n🧪 Process Handling Test Complete!");
+//     }, 8000);
+// }
+
+// // Uncomment the line below to run the process tests
+// runProcessTests();
