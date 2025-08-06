@@ -336,7 +336,7 @@ swapbxcx: () => {
         cpu.bx--
         cpu.ip++
     },
-    inxcx:()=>{
+    inccx:()=>{
         cpu.cx++
         cpu.ip++
     },
@@ -449,9 +449,6 @@ Object.assign(cpu, processInit)
 // ];
 // run(script)
 
-
-
-
 //test2
 //Math Operations
 // const mathProgram = [
@@ -505,7 +502,6 @@ Object.assign(cpu, processInit)
 //     { op: "halt" }
 // ];
 // run(memoryTest)
-
 
 //test4
 // //File System Operations Test
@@ -587,11 +583,11 @@ const prog1 = [
     { op: "halt" }
   ];
   
-//   const prog2 = [
-//     { op: "write", arg: { name: "p2.txt", content: "Process 2 here" } },
-//     { op: "magicstr" },
-//     { op: "halt" }
-//   ];
+  const prog2 = [
+    { op: "write", arg: { name: "p2.txt", content: "Process 2 here" } },
+    { op: "magicstr" },
+    { op: "halt" }
+  ];
   
 ctors.spawn(prog1);
 //ctors.spawn(prog2);

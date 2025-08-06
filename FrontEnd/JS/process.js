@@ -23,7 +23,7 @@ export const processOp = {
         const process = {
             pid: cpu.nextPID++,
             ip: 0,
-            state: "Ready", program,
+            state: "ready", program,
             registers:{
                 ax: 0,
                 bx: 0,
@@ -32,7 +32,6 @@ export const processOp = {
             }
         }
         cpu.processes.push(process)
-        process.pid
         cpu.ip++
         return process.pid
     },
@@ -46,7 +45,7 @@ export const processOp = {
     },
 
     ps: () => {
-        cpu.processes.array.forEach(p => {
+        cpu.processes.forEach(p => {
             console.log(
                 `PID: ${p.pid}, State: ${p.state}, IP: ${p.ip}`
             )
@@ -74,7 +73,6 @@ export function schedule(){
         }
         proc.ip++
     }
-    cpu.ip++
 }
 //Runs periodically
 setInterval(schedule, 500)

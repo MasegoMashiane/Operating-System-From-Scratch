@@ -1,16 +1,12 @@
-import { cpu } from "./CPU.js";
 //GUI terminal handling
-
 import { cpu } from "./CPU.js";
 import { getDir } from "./filesystem.js";
 import { ctors } from "./CPU.js";
 import { memoryOperations } from "./memory.js";
 import { filesystemOps } from "./filesystem.js";
 
-
 const outputDiv = document.getElementById('Output')
 const input= document.getElementById('command')
-
 
 function printToTerminal(text){
     const line = document.createElement('div')
@@ -24,7 +20,7 @@ input.addEventListener('keydown', (e)=> {
         const cmd = input.value.trim()
         printToTerminal (`MasegoOS@emulator:~$ ${cmd}`)
         runCommnand(cmd)
-        input.value = " "
+        input.value = ""
     }
 })
 

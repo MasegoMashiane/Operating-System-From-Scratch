@@ -6,7 +6,7 @@ export function getDir(cpu){
     let dir = cpu.fs.root
     
     for (const folder of cpu.cwd){
-        if  (!(folder in dir)) throw new Error(`Directry not found: ${folder}`)
+        if  (!(folder in dir)) throw new Error(`Directory not found: ${folder}`)
         dir = dir[folder]
     }
     return dir
@@ -50,12 +50,12 @@ export const filesystemOps = {
     read: name => {
         const dir = getDir(cpu);
         if (!(name in dir)) throw new Error(`no such file: ${name}`)
-        console.log(`{name}: ${dir[name]}`)
+        console.log(`${name}: ${dir[name]}`)
         cpu.ip++
     },
     rm: name => {
         const dir = getDir(cpu);
-        if (!(name in dir)) throw new error(`no such file/folder: ${name}`)
+        if (!(name in dir)) throw new Error(`no such file/folder: ${name}`)
         delete dir[name]
         cpu.ip++
     },
