@@ -702,23 +702,23 @@ Object.assign(cpu, processInit, threadsInit)
 // // Uncomment the line below to run the process tests
 // runProcessTests();
 
-const process1 = [
-    { op: "copy2ax", arg: 100 },
-    { op: "printax" },
-    { op: "copy2ax", arg: 101 },
-    { op: "printax" },
-    { op: "magicstr" },
-    { op: "halt" }
-];
+// const process1 = [
+//     { op: "copy2ax", arg: 100 },
+//     { op: "printax" },
+//     { op: "copy2ax", arg: 101 },
+//     { op: "printax" },
+//     { op: "magicstr" },
+//     { op: "halt" }
+// ];
 
-const process2 = [
-    { op: "copy2bx", arg: 200 },
-    { op: "printbx" },
-    { op: "copy2bx", arg: 201 },
-    { op: "printbx" },
-    { op: "magicstr" },
-    { op: "halt" }
-];
+// const process2 = [
+//     { op: "copy2bx", arg: 200 },
+//     { op: "printbx" },
+//     { op: "copy2bx", arg: 201 },
+//     { op: "printbx" },
+//     { op: "magicstr" },
+//     { op: "halt" }
+// ];
 
 // Spawn both processes
 //ctors.spawn(process1);
@@ -728,3 +728,30 @@ const process2 = [
 // Context switching messages
 // Alternating execution between processes
 // Each process maintaining its own register values
+
+
+
+
+// const stackExample = [
+//     // Initial: AX=0, BX=0, SP=0
+    
+//     { op: "copy2ax", arg: 100 },    // AX = 100
+//     { op: "copy2bx", arg: 200 },    // BX = 200
+    
+//     // Need to use AX for calculation, but want to save its value
+//     { op: "push", arg: "ax" },      // memory[0] = 100, SP = 1
+//     { op: "push", arg: "bx" },      // memory[1] = 200, SP = 2
+    
+//     // Now use registers for something else
+//     { op: "copy2ax", arg: 999 },    // AX = 999 (original value saved!)
+//     { op: "copy2bx", arg: 888 },    // BX = 888
+    
+//     // Later, restore original values
+//     { op: "pop", arg: "bx" },       // SP = 1, BX = 200 (restored!)
+//     { op: "pop", arg: "ax" },       // SP = 0, AX = 100 (restored!)
+    
+//     { op: "printax" },              // Prints: AX: 100
+//     { op: "printbx" },              // Prints: BX: 200
+//     { op: "halt" }
+// ];
+//run(stackExample)
