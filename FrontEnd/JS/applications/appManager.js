@@ -1,6 +1,6 @@
 import { cpu } from "../CPU.js";
 import { ctors } from "../CPU.js";
-
+ 
 // Application Manager - Handles dynamic UI injection and window management
 export class ApplicationManager {
     constructor() {

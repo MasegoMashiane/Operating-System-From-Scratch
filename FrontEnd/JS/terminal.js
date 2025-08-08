@@ -5,30 +5,31 @@ import { ctors } from "./CPU.js";
 import { memoryOperations } from "./memory.js";
 import { filesystemOps } from "./filesystem.js";
 
-const outputDiv = document.getElementById('Output')
-const input= document.getElementById('command')
+const outputDiv =  document.getElementById('Output')
+const input = document.getElementById('command')
 
-function printToTerminal(text){
+const terminalOp = {
+printToTerminal: (text) => {
     const line = document.createElement('div')
     line.textContent = text
     outputDiv.appendChild(line)
     outputDiv.scrollTop = outputDiv.scrollHeight
-}
+},
 
-input.addEventListener('keydown', (e)=> {
+inputhandling: input.addEventListener ('keydown', (e)=> {
     if (e.key === "Enter"){
         const cmd = input.value.trim()
         printToTerminal (`MasegoOS@emulator:~$ ${cmd}`)
         runCommnand(cmd)
         input.value = ""
     }
-})
+}),
 
 //bootloader/main loop
 //Web based terminal where a user can:
 // *Type commands lke mkdir,cd, ls, write, read, rm
 
-function runCommnand(cmd){
+runCommnand: (cmd) => {
     try {
     const [op, ...arg] = cmd.split(" ")
     const joinedArgs = arg.join(" ")
@@ -74,10 +75,10 @@ function runCommnand(cmd){
     catch(err){
         printToTerminal(`Error: ${err.message}`)
     }
-}
+},
 
 //hook console.log to terminal output
-function captureOutput(fn){
+captureOutput: (fn) => {
     const originalLog = console.log
     console.log = (...arg) => printToTerminal(arg.join(" "))
     try{
@@ -86,4 +87,5 @@ function captureOutput(fn){
     finally{
         console.log = originalLog
     }
+}
 }
