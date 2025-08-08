@@ -85,98 +85,112 @@ export function schedule(){
     const readyProcs = cpu.processes.filter(p => p.state === "ready")
     
 
-    if (readyProcs.length === 0 ) return //no processes to run
+    // if (readyProcs.length === 0 ) return //no processes to run
 
-    // Round robin scheduling: pick next process to run
-    const currentIndex = readyProcs.findIndex(p => p.pid === cpu.currentPID)
-    const nextIndex = (currentIndex+1)%readyProcs.length
-    const nextProcess = readyProcs[nextIndex]
+    // // Round robin scheduling: pick next process to run
+    // const currentIndex = readyProcs.findIndex(p => p.pid === cpu.currentPID)
+    // const nextIndex = (currentIndex+1)%readyProcs.length
+    // const nextProcess = readyProcs[nextIndex]
 
-    contextSwitch(cpu.currentPID, nextProcess.pid)
+    // contextSwitch(cpu.currentPID, nextProcess.pid)
 
     //Execute one instruction
     //switch to next process
-    // for (const proc of readyProcs){
-    //     cpu.currentPID = proc.pid
-    //     const instr = proc.program[proc.ip]
+    for (const proc of readyProcs){
+        cpu.currentPID = proc.pid
+        const instr = proc.program[proc.ip]
         
-    //     if(!instr){
-    //         proc.state = "halted"
-    //         continue
-    //     }
-    //     try {
-    //         if (ctors[instr.op]){
-    //             ctors[instr.op](instr.arg)
-    //         }
-    //     }catch(e){
-    //         console.log(`Error in PID ${proc.pid}:`, e.message)
-    //     }
-    //     proc.ip++
-    // }
-}
-
-//Context Switching 
-function contextSwitch(fromPID, toPID){
-    //Save current process context 
-    if (fromPID){
-        const currentProcess = cpu.processes.find(p => p.pid === fromPID)
-        if (currentProcess && currentProcess.state === "running"){
-            //save cpu state to process
-            currentProcess.registers.ax = cpu.ax
-            currentProcess.registers.bx = cpu.bx
-            currentProcess.registers.cx = cpu.cx
-            currentProcess.registers.sp = cpu.sp
-            currentProcess.savedIP = currentProcess.ip
-
-            //Change state from running to ready
-            currentProcess.state = "ready"
-            console.log (` Context saved for PID ${fromPID}`)
-        }   
-    }
-
-    //load new process context
-    const newProcess = cpu.processes.find(p => p.pid === toPID)
-    if (newProcess && newProcess.state === "ready"){
-        //restore restore cpu state from process
-        cpu.ax = newProcess.registers.ax
-        cpu.bx = newProcess.registers.bx
-        cpu.cx = newProcess.registers.cx
-        cpu.sp = newProcess.registers.cx
-
-        //update process state
-        newProcess.state = "running"
-        cpu.currentPID = toPID
-
-        console.log(` Context loaded for PID ${toPID}`)
-
-        //execute one instruction for this process
-        executeProcessInstruction(newProcess)
-    }
-}
-
-
-function executeProcessInstruction(process){
-    const instr = process= process.program[process.ip]
-
-    if(!instr){
-        //process completed
-        process.state = "terminated"
-        console.log(`Process ${process.pid} completed`)
-
-        //clear current PID if this was the running process
-        if (cpu.currentPID === process.pid){
-            cpu.currentPID = null
+        if(!instr){
+            proc.state = "halted"
+            continue
         }
-        return
-    }
-    try{
-        //execute the instruction
-        if (ctors.Error){}
-    }
-    catch(e){
-        //
+        try {
+            if (ctors[instr.op]){
+                ctors[instr.op](instr.arg)
+            }
+        }catch(e){
+            console.log(`Error in PID ${proc.pid}:`, e.message)
+        }
+        proc.ip++
     }
 }
+
+// //Context Switching 
+// function contextSwitch(fromPID, toPID){
+//     //Save current process context 
+//     if (fromPID){
+//         const currentProcess = cpu.processes.find(p => p.pid === fromPID)
+//         if (currentProcess && currentProcess.state === "running"){
+//             //save cpu state to process
+//             currentProcess.registers.ax = cpu.ax
+//             currentProcess.registers.bx = cpu.bx
+//             currentProcess.registers.cx = cpu.cx
+//             currentProcess.registers.sp = cpu.sp
+//             currentProcess.savedIP = currentProcess.ip
+
+//             //Change state from running to ready
+//             currentProcess.state = "ready"
+//             console.log (` Context saved for PID ${fromPID}`)
+//         }   
+//     }
+
+//     //load new process context
+//     const newProcess = cpu.processes.find(p => p.pid === toPID)
+//     if (newProcess && newProcess.state === "ready"){
+//         //restore restore cpu state from process
+//         cpu.ax = newProcess.registers.ax
+//         cpu.bx = newProcess.registers.bx
+//         cpu.cx = newProcess.registers.cx
+//         cpu.sp = newProcess.registers.cx
+
+//         //update process state
+//         newProcess.state = "running"
+//         cpu.currentPID = toPID
+
+//         console.log(` Context loaded for PID ${toPID}`)
+
+//         //execute one instruction for this process
+//         executeProcessInstruction(newProcess)
+//     }
+//     cpu.ip++
+//}
+
+
+// function executeProcessInstruction(process){
+//     const instr = process= process.program[process.ip]
+
+//     if(!instr){
+//         //process completed
+//         process.state = "terminated"
+//         console.log(`Process ${process.pid} completed`)
+
+//         //clear current PID if this was the running process
+//         if (cpu.currentPID === process.pid){
+//             cpu.currentPID = null
+//         }
+//         return
+//     }
+//     try{
+//         //execute the instruction
+//         if (ctors[instr.op]){
+//             ctors[instr.op](instr.arg)
+//             process.ip++
+//         }
+//         else {
+//             console.log(`Unknown instruction: ${instr.op}`)
+//             process.ip++
+//         }
+
+//         //Update process statistics
+//         process.instructionExecuted++
+//         process.lastExecuted = Date.now()
+//     }
+//     catch(e){
+//         console.log(` Error in PID ${process.pid}:`, e.message)
+//         process.state = "terminated"
+//     }
+//     cpu.ip++
+// }
 
 // It is like saving your progress in one game, then loading your progress
 // in another game.
@@ -186,4 +200,4 @@ function executeProcessInstruction(process){
 // Resume execution from where the new process left off
 
 //Runs periodically
-setInterval(schedule, 500)
+setInterval(schedule, 100)

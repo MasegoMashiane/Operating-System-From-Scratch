@@ -3,6 +3,7 @@ import { filesystemOps } from "./filesystem.js";
 import { memoryOperations } from "./memory.js";
 import { processInit, processOp, schedule } from "./process.js";
 import { threadsInit } from "./threads.js";
+import { stackOps } from "./Stack Operations.js";
 
 // CPU Interpreter
 // Defining CPU STATE
@@ -31,7 +32,7 @@ export const cpu = {
 
 // Simulated RAM: A block of 256 memory cells initialized to 0
 // e.g cpu.memory[0] = 42 => writes 42 at the index of 0
-    memory: new Array(256).fill(0), 
+    memory: new Array(256).fill(0), //Stack lives here
 
 
 // CPU Stop Flag
@@ -437,7 +438,7 @@ function run (instructions) {
     console.log("Final CPU State:", cpu)
 }
 
-Object.assign(ctors, filesystemOps, getDir, memoryOperations, processOp, schedule)
+Object.assign(ctors, filesystemOps, getDir, memoryOperations, processOp, schedule, stackOps)
 Object.assign(cpu, processInit, threadsInit)
 //test1
 //Infinite loop
@@ -700,3 +701,30 @@ Object.assign(cpu, processInit, threadsInit)
 
 // // Uncomment the line below to run the process tests
 // runProcessTests();
+
+const process1 = [
+    { op: "copy2ax", arg: 100 },
+    { op: "printax" },
+    { op: "copy2ax", arg: 101 },
+    { op: "printax" },
+    { op: "magicstr" },
+    { op: "halt" }
+];
+
+const process2 = [
+    { op: "copy2bx", arg: 200 },
+    { op: "printbx" },
+    { op: "copy2bx", arg: 201 },
+    { op: "printbx" },
+    { op: "magicstr" },
+    { op: "halt" }
+];
+
+// Spawn both processes
+//ctors.spawn(process1);
+// ctors.spawn(process2);
+
+// Watch the console - you should see:
+// Context switching messages
+// Alternating execution between processes
+// Each process maintaining its own register values
