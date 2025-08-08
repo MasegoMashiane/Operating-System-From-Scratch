@@ -8,6 +8,7 @@ import { cpu } from "./CPU.js";
 
 //Store value from register to memory
 export const memoryOperations = {
+   
     StoreMem: ({ addr, reg}) => {
         if (addr >= 0 && addr < cpu.memory.length){
             cpu.memory[addr] = cpu[reg];
@@ -18,6 +19,7 @@ export const memoryOperations = {
             cpu.halted = true
         }
     },
+
     //Load Value from memory to register
     loadMem:({addr, reg}) => {
         if (addr >= 0 && addr < cpu.memory.length){
@@ -48,4 +50,5 @@ export const memoryOperations = {
         console.log("memory cleared")
         cpu.ip++
     }
+
 }
