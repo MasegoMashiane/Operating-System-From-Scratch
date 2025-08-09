@@ -1,5 +1,8 @@
 import { cpu } from "../CPU.js";
 import { ctors } from "../CPU.js";
+import { filesystemOps } from "../filesystem.js"; 
+import { Terminal } from "../terminal.js"
+import { EnhancedCalculator } from "./calculator.js"
  
 // Application Manager - Handles dynamic UI injection and window management
 export class ApplicationManager {
@@ -232,6 +235,9 @@ export class ApplicationManager {
         // Check if app is already open
         for (const [windowId, window] of this.openWindows) {
             if (window.appName === appName) {
+                if (window.minimized){
+                    this.minimizeWindow(windowId)
+                }
                 this.focusWindow(windowId);
                 return;
             }
@@ -242,19 +248,25 @@ export class ApplicationManager {
         console.log(`🚀 Launched ${app.name} (Window ID: ${windowId})`);
     }
 
+
+
     createWindow(app, appName) {
+        
         const windowId = this.nextWindowId++;
-        const window = document.createElement('div');
-        window.className = 'app-window';
-        window.id = `window-${windowId}`;
-        window.style.width = `${app.width}px`;
-        window.style.height = `${app.height}px`;
-        window.style.left = `${50 + (windowId * 30)}px`;
-        window.style.top = `${50 + (windowId * 30)}px`;
-        window.style.zIndex = this.zIndexCounter++;
+        const windowEl = document.createElement('div');
+        windowEl.className = 'app-window';
+        windowEl.id = `window-${windowId}`;
+        windowEl.style.width = `${app.width}px`;
+        windowEl.style.height = `${app.height}px`;
+        windowEl.style.left = `${50 + (windowId * 30)}px`;
+        windowEl.style.top = `${50 + (windowId * 30)}px`;
+        windowEl.style.zIndex = this.zIndexCounter++;
+
+        console.log(`windowsEl.innerHTML: ${windowEl.innerHTML}
+            windowsEl: ${windowEl}`)
 
         // Create window structure
-        window.innerHTML = `
+        windowEl.innerHTML = `
             <div class="window-titlebar">
                 <div class="window-title">${app.icon} ${app.name}</div>
                 <div class="window-controls">
@@ -268,25 +280,89 @@ export class ApplicationManager {
             </div>
         `;
 
+
+
+    // calculator initialization
+    if (appName === 'calculator') {
+
+    // Use setTimeout to ensure DOM is ready
+        setTimeout(() => {
+        const display = windowEl.querySelector('#calc-display');
+        const buttons = windowEl.querySelectorAll('.calc-btn');
+        
+        if (display && buttons.length > 0) {
+            // Import and initialize the enhanced calculator
+            import('./calculator.js').then(({ EnhancedCalculator }) => {
+                const calculator = new EnhancedCalculator(display);
+                
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        calculator.handleInput(button.dataset.value);
+                    });
+                });
+                
+                // Store calculator instance for potential future use
+                windowEl.calculatorInstance = calculator;
+                
+                console.log('✅ Enhanced Calculator initialized');
+            }).catch(error => {
+                console.error('Failed to load calculator module:', error);
+                // Fallback to basic calculator if import fails
+                const calculator = new Calculator(display);  // Your original calculator
+                buttons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        calculator.handleInput(button.dataset.value);
+                    });
+                });
+            });
+        } else {
+            console.error('Calculator elements not found');
+        }
+    }, 100);
+}
+
+//terminal initialization
+        if (appName === 'terminal') {
+            const output = windowEl.querySelector('.terminal-output');
+            const input = windowEl.querySelector('.terminal-input');
+            
+            if (output && input){
+                new Terminal(output, input)    
+            }
+            else{
+                console.error(`terminal elements not found in window`, windowEl)
+            }
+        }
+
         // Add event listeners
-        this.addWindowEventListeners(window, windowId);
+        this.addWindowEventListeners(windowEl, windowId);
 
         // Add to desktop
-        document.getElementById('desktop').appendChild(window);
+        document.getElementById('desktop').appendChild(windowEl);
 
         // Track the window
         this.openWindows.set(windowId, {
-            element: window,
+            element: windowEl,
             appName: appName,
             minimized: false
         });
-
+        if (this.applications.has(appName)){
+            this.updateAppIcon(appName, true)
+        }else{
+            console.warn(`Application ${appName} not registered`)
+        }
+        
+        if(this.applications.has(appName)){
+            this.updateAppIcon(appName, true)
+        } else{
+            console.warn(`Application ${appName} not registered`)
+        }
         return windowId;
     }
 
-    addWindowEventListeners(window, windowId) {
-        const titlebar = window.querySelector('.window-titlebar');
-        const controls = window.querySelector('.window-controls');
+    addWindowEventListeners(windowEl, windowId) {
+        const titlebar = windowEl.querySelector('.window-titlebar');
+        const controls = windowEl.querySelector('.window-controls');
 
         // Window dragging
         let isDragging = false;
@@ -296,8 +372,8 @@ export class ApplicationManager {
             if (e.target.closest('.window-controls')) return;
             
             isDragging = true;
-            dragOffset.x = e.clientX - window.offsetLeft;
-            dragOffset.y = e.clientY - window.offsetTop;
+            dragOffset.x = e.clientX - windowEl.offsetLeft;
+            dragOffset.y = e.clientY - windowEl.offsetTop;
             
             this.focusWindow(windowId);
         });
@@ -305,8 +381,8 @@ export class ApplicationManager {
         document.addEventListener('mousemove', (e) => {
             if (!isDragging) return;
             
-            window.style.left = `${e.clientX - dragOffset.x}px`;
-            window.style.top = `${e.clientY - dragOffset.y}px`;
+            windowEl.style.left = `${e.clientX - dragOffset.x}px`;
+            windowEl.style.top = `${e.clientY - dragOffset.y}px`;
         });
 
         document.addEventListener('mouseup', () => {
@@ -330,7 +406,7 @@ export class ApplicationManager {
         });
 
         // Focus on click
-        window.addEventListener('mousedown', () => {
+        windowEl.addEventListener('mousedown', () => {
             this.focusWindow(windowId);
         });
     }
@@ -347,6 +423,12 @@ export class ApplicationManager {
         if (window) {
             window.element.remove();
             this.openWindows.delete(windowId);
+            
+            if(window.appName && this.applications.has(window.appName)){
+                this.updateAppIcon(window.appName, false)
+            }else{
+                console.warn(`Invalid or missing appName for window ${windowId}`)
+            }
             console.log(`🗑️ Closed window ${windowId}`);
         }
     }
@@ -356,6 +438,7 @@ export class ApplicationManager {
         if (window) {
             window.element.style.display = window.minimized ? 'block' : 'none';
             window.minimized = !window.minimized;
+            this.updateAppIcon(window.appName, !window.minimized)
         }
     }
 
@@ -386,72 +469,54 @@ export class ApplicationManager {
         }
     }
 
-    // Application UI Creators
-    createCalculatorUI() {
-        return `
-            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 250px;">
-                <div id="calc-display" style="grid-column: 1/-1; background: #000; color: #0f0; padding: 16px; text-align: right; font-family: monospace; font-size: 18px; border-radius: 4px;">0</div>
-                <button class="calc-btn" data-value="C" style="background: #ff6b6b; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">C</button>
-                <button class="calc-btn" data-value="±" style="background: #4ecdc4; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">±</button>
-                <button class="calc-btn" data-value="%" style="background: #4ecdc4; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">%</button>
-                <button class="calc-btn" data-value="/" style="background: #45b7d1; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">÷</button>
-                <button class="calc-btn" data-value="7" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">7</button>
-                <button class="calc-btn" data-value="8" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">8</button>
-                <button class="calc-btn" data-value="9" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">9</button>
-                <button class="calc-btn" data-value="*" style="background: #45b7d1; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">×</button>
-                <button class="calc-btn" data-value="4" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">4</button>
-                <button class="calc-btn" data-value="5" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">5</button>
-                <button class="calc-btn" data-value="6" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">6</button>
-                <button class="calc-btn" data-value="-" style="background: #45b7d1; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">−</button>
-                <button class="calc-btn" data-value="1" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">1</button>
-                <button class="calc-btn" data-value="2" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">2</button>
-                <button class="calc-btn" data-value="3" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">3</button>
-                <button class="calc-btn" data-value="+" style="background: #45b7d1; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">+</button>
-                <button class="calc-btn" data-value="0" style="grid-column: 1/3; background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">0</button>
-                <button class="calc-btn" data-value="." style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">.</button>
-                <button class="calc-btn" data-value="=" style="background: #45b7d1; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">=</button>
-            </div>
-            <script>
-                // Calculator logic will be added here
-                setTimeout(() => {
-                    const display = document.getElementById('calc-display');
-                    const buttons = document.querySelectorAll('.calc-btn');
-                    let currentValue = '0';
-                    let operator = null;
-                    let waitingForOperand = false;
-                    
-                    buttons.forEach(button => {
-                        button.addEventListener('click', () => {
-                            const value = button.dataset.value;
-                            
-                            if (value >= '0' && value <= '9' || value === '.') {
-                                if (waitingForOperand) {
-                                    currentValue = value;
-                                    waitingForOperand = false;
-                                } else {
-                                    currentValue = currentValue === '0' ? value : currentValue + value;
-                                }
-                            } else if (value === 'C') {
-                                currentValue = '0';
-                                operator = null;
-                                waitingForOperand = false;
-                            } else if (value === '=') {
-                                // Simple calculation logic here
-                                display.textContent = currentValue;
-                                return;
-                            } else {
-                                operator = value;
-                                waitingForOperand = true;
-                            }
-                            
-                            display.textContent = currentValue;
-                        });
-                    });
-                }, 100);
-            </script>
-        `;
+    updateAppIcon(appName, active){
+        
+        if (!appName || typeof appName !== 'string') {
+            console.warn(`Invalid appName provided to updateAppIcon: ${appName}`);
+            return;
+        }
+
+        const icon = document.querySelector(`.app-icon[data-app="${appName}]"`)
+        if (icon){
+            if (active){
+                icon.classList.add(`active`)
+            }else{
+                icon.classList.remove(`active`)
+            }
+        }
     }
 
+    // Application UI Creators
+        createCalculatorUI() {
+    return `
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 280px;">
+            <div id="calc-display" style="grid-column: 1/-1; background: #000; color: #0f0; padding: 16px; text-align: right; font-family: monospace; font-size: 18px; border-radius: 4px; min-height: 40px;">0</div>
+            <button class="calc-btn" data-value="C" style="background: #ff6b6b; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer; font-weight: bold;">C</button>
+            <button class="calc-btn" data-value="±" style="background: #4ecdc4; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">±</button>
+            <button class="calc-btn" data-value="%" style="background: #4ecdc4; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">%</button>
+            <button class="calc-btn" data-value="/" style="background: #45b7d1; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">÷</button>
+            <button class="calc-btn" data-value="7" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">7</button>
+            <button class="calc-btn" data-value="8" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">8</button>
+            <button class="calc-btn" data-value="9" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">9</button>
+            <button class="calc-btn" data-value="*" style="background: #45b7d1; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">×</button>
+            <button class="calc-btn" data-value="4" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">4</button>
+            <button class="calc-btn" data-value="5" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">5</button>
+            <button class="calc-btn" data-value="6" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">6</button>
+            <button class="calc-btn" data-value="-" style="background: #45b7d1; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">−</button>
+            <button class="calc-btn" data-value="1" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">1</button>
+            <button class="calc-btn" data-value="2" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">2</button>
+            <button class="calc-btn" data-value="3" style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">3</button>
+            <button class="calc-btn" data-value="+" style="background: #45b7d1; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">+</button>
+            <button class="calc-btn" data-value="0" style="grid-column: 1/3; background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">0</button>
+            <button class="calc-btn" data-value="." style="background: #666; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">.</button>
+            <button class="calc-btn" data-value="=" style="background: #45b7d1; color: white; border: none; padding: 16px; border-radius: 4px; cursor: pointer;">=</button>
+            <button class="calc-btn" data-value="(" style="background: #4ecdc4; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">(</button>
+            <button class="calc-btn" data-value=")" style="background: #4ecdc4; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 12px;">)</button>
+            <button class="calc-btn" data-value="CPU" style="background: #28a745; color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; font-size: 10px; grid-column: 3/5;">→CPU</button>
+        </div>
+    `;
+}
+    
     createNotepadUI() {
         return `
             <div style="height: 100%; display: flex; flex-direction: column;">
@@ -488,18 +553,14 @@ export class ApplicationManager {
         `;
     }
 
-    createTerminalUI() {
-        return `
-            <div style="height: 100%; background: #000; color: #0f0; font-family: 'Courier New', monospace; padding: 16px; overflow-y: auto;">
-                <div id="terminal-output" style="white-space: pre-wrap; margin-bottom: 16px;">MasegoOS Terminal v1.0
-Type 'help' for available commands.
-
-</div>
-                <div style="display: flex; align-items: center;">
-                    <span style="color: #0f0;">$ </span>
-                    <input id="terminal-input" type="text" style="flex: 1; background: transparent; border: none; color: #0f0; font-family: inherit; outline: none;" placeholder="Enter command...">
-                </div>
+    /*`
+        <div class="terminal-container" style="height: 100%; display: flex; flex-direction: column;"> Blue
+            <div id="terminal-output-${Date.now()}" class="terminal-output" style="flex: 1; background: #000; color: #0f0; font-family: monospace; padding: 8px; overflow-y: auto;"></div>
+            <div style="display: flex;">
+                <span style="color: #0f0; padding: 8px;">$</span>
+                <input id="terminal-input-${Date.now()}" type="text" style="flex: 1; background: transparent; border: none; color: #0f0; outline: none; font-family: monospace;">
             </div>
+        </div>
             <script>
                 setTimeout(() => {
                     const input = document.getElementById('terminal-input');
@@ -526,12 +587,48 @@ Type 'help' for available commands.
                     input.focus();
                 }, 100);
             </script>
+    `*/
+//    `
+//     <div style="height: 100%; background: #000; color: #0f0; font-family: 'Courier New', monospace; padding: 16px; overflow-y: auto;">
+//         <div id="terminal-output" style="white-space: pre-wrap; margin-bottom: 16px;">MasegoOS Terminal v1.0
+// Type 'help' for available commands.
+
+// </div>
+//         <div style="display: flex; align-items: center;">
+//             <span style="color: #0f0;">$ </span>
+//             <input id="terminal-input" type="text" style="flex: 1; background: transparent; border: none; color: #0f0; font-family: inherit; outline: none;" placeholder="Enter command...">
+//         </div>
+
+//     </div>
+
+// `;
+// }
+
+// <div class="terminal-container" style="height: 100%; display: flex; flex-direction: column; background: #000; color: #0f0; font-family: monospace;">
+//             <div class="terminal-output" style="flex: 1; padding: 8px 8px 0 8px; overflow-y: auto; white-space: pre-wrap;">MasegoOS Terminal v1.0\nType 'help' for available commands.\n</div>
+//             <div style="display: flex; align-items: center; padding-bottom: 8px;">
+//                 <span style="color: #0f0; padding: 0 8px;">$</span>
+//                 <input class="terminal-input" type="text" style="flex: 1; background: transparent; border: none; color: #0f0; outline: none; font-family: monospace;">
+//             </div>
+//         </div>
+
+    createTerminalUI() {
+        return `
+        <div class="terminal-container" style="height: 100%; display: flex; flex-direction: column; background: #000; color: #0f0; font-family: monospace;">
+            <div class="terminal-output" style="flex: 1; padding: 8px 8px 0 8px; overflow-y: auto; white-space: pre-wrap;">MasegoOS Terminal v1.0\nType 'help' for available commands.\n</div>
+            <div style="display: flex; align-items: center; padding-bottom: 8px;">
+                <span style="color: #0f0; padding: 0 8px;">$</span>
+                <input class="terminal-input" type="text" style="flex: 1; background: transparent; border: none; color: #0f0; outline: none; font-family: monospace;">
+            </div>
+        </div>
         `;
     }
+    
+    
 
     createFileManagerUI() {
         return `
-            <div style="height: 100%; display: flex; flex-direction: column;">
+        <div style="height: 100%; display: flex; flex-direction: column;">
                 <div style="background: #333; padding: 8px; border-bottom: 1px solid #555; display: flex; align-items: center; gap: 8px;">
                     <button id="back-btn" style="background: #555; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">←</button>
                     <span id="current-path" style="flex: 1; color: #ccc;">/</span>
@@ -548,8 +645,8 @@ Type 'help' for available commands.
                         📄 <span style="margin-left: 8px;">notes.txt</span>
                     </div>
                 </div>
-            </div>
-        `;
+            </div>`
+        ;
     }
 
     createProcessMonitorUI() {
