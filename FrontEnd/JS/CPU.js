@@ -355,7 +355,6 @@ swapbxcx: () => {
         cpu.ip++
     },
 
-
 //Print Register Values
     printax: () => {
         console.log(`AX: ${cpu.ax}`)

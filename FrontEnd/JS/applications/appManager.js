@@ -1,10 +1,10 @@
-console.log(`app Manager`)
-import { cpu } from "../CPU.js";
-import { ctors } from "../CPU.js";
+import { cpu } from "../CPU.js"
+import { getDir } from "../filesystem.js";
 import { filesystemOps } from "../filesystem.js"; 
 import { Terminal } from "../terminal.js"
 import { EnhancedCalculator } from "./calculato.js"
- 
+import { Notepad } from "./notepad.js";
+
 // Application Manager - Handles dynamic UI injection and window management
 export class ApplicationManager {
     constructor() {
@@ -249,8 +249,6 @@ export class ApplicationManager {
         console.log(`🚀 Launched ${app.name} (Window ID: ${windowId})`);
     }
 
-
-
     createWindow(app, appName) {
         
         const windowId = this.nextWindowId++;
@@ -281,7 +279,37 @@ export class ApplicationManager {
             </div>
         `;
 
-
+    //Notepad initialization
+    if (appName === 'notepad') {
+        import('./notepad.js').then(({ Notepad }) => {
+            const textarea = windowEl.querySelector('.notepad-content');
+            const saveBtn = windowEl.querySelector('.save-btn');
+            const loadBtn = windowEl.querySelector('.load-btn');
+            const newBtn = windowEl.querySelector('.new-btn');
+            const deleteBtn = windowEl.querySelector('.delete-btn');
+    
+            const notepad = new Notepad(textarea);
+    
+            saveBtn.addEventListener('click', () => {
+                const filename = prompt('Enter filename:', 'untitled.txt');
+                if (filename) notepad.saveFile(filename);
+            });
+    
+            loadBtn.addEventListener('click', () => {
+                const filename = prompt('Enter filename to load:');
+                if (filename) notepad.loadFile(filename);
+            });
+    
+            newBtn.addEventListener('click', () => notepad.newFile());
+    
+            deleteBtn.addEventListener('click', () => {
+                const filename = prompt('Enter filename to delete:');
+                if (filename) notepad.deleteFile(filename);
+            });
+        }).catch(err => {
+            console.error('❌ Failed to load Notepad module:', err);
+        });
+    }   
 
     // calculator initialization
     if (appName === 'calculator') {
@@ -322,6 +350,132 @@ export class ApplicationManager {
     }, 500);
 }
 
+// File Manager initialization
+if (appName === 'filemanager') {
+    const winData = this.openWindows.get(windowId);
+    const winEl = winData.element;
+
+    const fileListEl = winEl.querySelector('.file-list');
+    const pathEl = winEl.querySelector('.current-path');
+    const backBtn = winEl.querySelector('.back-btn');
+    const refreshBtn = winEl.querySelector('.refresh-btn');
+    const newFileBtn = winEl.querySelector('.new-file-btn');
+    const newFolderBtn = winEl.querySelector('.new-folder-btn');
+
+    const renderDirectory = () => {
+        const dir = getDir();
+        pathEl.textContent = "/" + cpu.cwd.join("/");
+        fileListEl.innerHTML = "";
+
+        Object.entries(dir).forEach(([name, value]) => {
+            const item = document.createElement('div');
+            item.className = 'file-item';
+            item.dataset.name = name;
+            item.dataset.type = typeof value === 'object' ? 'folder' : 'file';
+            item.style.cssText = "padding: 8px; margin: 4px 0; background: #333; border-radius: 4px; cursor: pointer; display: flex; align-items: center;";
+            item.innerHTML = (typeof value === 'object' ? "📁" : "📄") + `<span style="margin-left: 8px;">${name}</span>`;
+            fileListEl.appendChild(item);
+        });
+    };
+
+    const openFolder = (folderName) => {
+        cpu.cwd.push(folderName);
+        renderDirectory();
+    };
+
+    const goBack = () => {
+        if (cpu.cwd.length > 0) {
+            cpu.cwd.pop();
+            renderDirectory();
+        }
+    };
+
+    const openTxtFileInNotepad = (fileName) => {
+        const notepadWindowId = this.createWindow({
+            name: 'Notepad',
+            icon: '📝',
+            width: 500,
+            height: 400,
+            createContent: () => this.createNotepadUI()
+        }, 'notepad');
+
+        setTimeout(() => {
+            import('./notepad.js').then(({ Notepad }) => {
+                const win = this.openWindows.get(notepadWindowId);
+                if (!win) return;
+
+                const textarea = win.element.querySelector('.notepad-content');
+                const saveBtn = win.element.querySelector('.save-btn');
+                const loadBtn = win.element.querySelector('.load-btn');
+                const newBtn = win.element.querySelector('.new-btn');
+                const deleteBtn = win.element.querySelector('.delete-btn');
+
+                const notepad = new Notepad(textarea);
+                notepad.loadFile(fileName);
+
+                saveBtn.addEventListener('click', () => {
+                    const filename = prompt('Enter filename:', fileName);
+                    if (filename) notepad.saveFile(filename);
+                });
+                loadBtn.addEventListener('click', () => {
+                    const filename = prompt('Enter filename to load:', fileName);
+                    if (filename) notepad.loadFile(filename);
+                });
+                newBtn.addEventListener('click', () => notepad.newFile());
+                deleteBtn.addEventListener('click', () => {
+                    const filename = prompt('Enter filename to delete:', fileName);
+                    if (filename) notepad.deleteFile(filename);
+                });
+            });
+        }, 50);
+    };
+
+    // Event Listeners
+    fileListEl.addEventListener('dblclick', (e) => {
+        const item = e.target.closest('.file-item');
+        if (!item) return;
+        const name = item.dataset.name;
+        const type = item.dataset.type;
+
+        if (type === 'folder') {
+            openFolder(name);
+        } else if (type === 'file' && name.endsWith('.txt')) {
+            openTxtFileInNotepad(name);
+        }
+    });
+
+    backBtn.addEventListener('click', goBack);
+    refreshBtn.addEventListener('click', renderDirectory);
+
+    newFileBtn.addEventListener('click', () => {
+        const filename = prompt('Enter new file name (with extension):', 'newfile.txt');
+        if (!filename) return;
+        const dir = getDir();
+        if (dir[filename]) {
+            alert('❌ A file or folder with that name already exists.');
+            return;
+        }
+        dir[filename] = ""; // empty file
+        renderDirectory();
+    });
+
+    newFolderBtn.addEventListener('click', () => {
+        const folderName = prompt('Enter new folder name:', 'New Folder');
+        if (!folderName) return;
+        const dir = getDir();
+        if (dir[folderName]) {
+            alert('❌ A file or folder with that name already exists.');
+            return;
+        }
+        dir[folderName] = {};
+        renderDirectory();
+    });
+
+    // Initial render
+    renderDirectory();
+}
+
+
 //terminal initialization
         if (appName === 'terminal') {
             const output = windowEl.querySelector('.terminal-output');
@@ -334,7 +488,6 @@ export class ApplicationManager {
                 console.error(`terminal elements not found in window`, windowEl)
             }
         }
-
         // Add event listeners
         this.addWindowEventListeners(windowEl, windowId);
 
@@ -520,106 +673,36 @@ export class ApplicationManager {
     
     createNotepadUI() {
         return `
-            <div style="height: 100%; display: flex; flex-direction: column;">
-                <div style="background: #333; padding: 8px; border-bottom: 1px solid #555;">
-                    <button id="save-btn" style="background: #0078d4; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; margin-right: 8px;">Save</button>
-                    <button id="load-btn" style="background: #0078d4; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer;">Load</button>
-                </div>
-                <textarea id="notepad-content" placeholder="Start typing..." style="flex: 1; background: #1e1e1e; color: white; border: none; padding: 16px; font-family: 'Courier New', monospace; resize: none; outline: none;"></textarea>
+            <div class="notepad-app" style="height: 100%; display: flex; flex-direction: column;">
+            <div class="notepad-toolbar" style="background: #333; padding: 8px; border-bottom: 1px solid #555;">
+                <button class="save-btn" style="background: #0078d4; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; margin-right: 8px;">Save</button>
+                <button class="load-btn" style="background: #0078d4; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer;">Load</button>
+                <button class="new-btn" style="background: #555; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; margin-left: 8px;">New</button>
+                <button class="delete-btn" style="background: #ff4d4d; color: white; border: none; padding: 4px 12px; border-radius: 4px; cursor: pointer; margin-left: 8px;">Delete</button>
             </div>
-            <script>
-                setTimeout(() => {
-                    const textarea = document.getElementById('notepad-content');
-                    const saveBtn = document.getElementById('save-btn');
-                    const loadBtn = document.getElementById('load-btn');
-                    
-                    saveBtn.addEventListener('click', () => {
-                        const content = textarea.value;
-                        const filename = prompt('Enter filename:') || 'untitled.txt';
-                        // Save to virtual filesystem
-                        ctors.write({ name: filename, content: content });
-                        alert('File saved to virtual filesystem!');
-                    });
-                    
-                    loadBtn.addEventListener('click', () => {
-                        const filename = prompt('Enter filename to load:');
-                        if (filename) {
-                            // This would load from virtual filesystem
-                            // For now, just show a placeholder
-                            textarea.value = 'Loading from virtual filesystem...\\n' + filename;
-                        }
-                    });
-                }, 100);
-            </script>
+            <textarea class="notepad-content" placeholder="Start typing..." style="flex: 1; background: #1e1e1e; color: white; border: none; padding: 16px; font-family: 'Courier New', monospace; resize: none; outline: none;"></textarea>
+        </div>
         `;
     }
 
-    /*`
-        <div class="terminal-container" style="height: 100%; display: flex; flex-direction: column;"> Blue
-            <div id="terminal-output-${Date.now()}" class="terminal-output" style="flex: 1; background: #000; color: #0f0; font-family: monospace; padding: 8px; overflow-y: auto;"></div>
-            <div style="display: flex;">
-                <span style="color: #0f0; padding: 8px;">$</span>
-                <input id="terminal-input-${Date.now()}" type="text" style="flex: 1; background: transparent; border: none; color: #0f0; outline: none; font-family: monospace;">
-            </div>
-        </div>
-            <script>
-                setTimeout(() => {
-                    const input = document.getElementById('terminal-input');
-                    const output = document.getElementById('terminal-output');
-                    
-                    input.addEventListener('keydown', (e) => {
-                        if (e.key === 'Enter') {
-                            const command = input.value.trim();
-                            output.textContent += '$ ' + command + '\\n';
-                            
-                            // Execute command through your existing terminal system
-                            try {
-                                // This would integrate with your existing terminal.js
-                                output.textContent += 'Command executed: ' + command + '\\n\\n';
-                            } catch (error) {
-                                output.textContent += 'Error: ' + error.message + '\\n\\n';
-                            }
-                            
-                            input.value = '';
-                            output.scrollTop = output.scrollHeight;
-                        }
-                    });
-                    
-                    input.focus();
-                }, 100);
-            </script>
-    `*/
-//    `
-//     <div style="height: 100%; background: #000; color: #0f0; font-family: 'Courier New', monospace; padding: 16px; overflow-y: auto;">
-//         <div id="terminal-output" style="white-space: pre-wrap; margin-bottom: 16px;">MasegoOS Terminal v1.0
-// Type 'help' for available commands.
-
-// </div>
-//         <div style="display: flex; align-items: center;">
-//             <span style="color: #0f0;">$ </span>
-//             <input id="terminal-input" type="text" style="flex: 1; background: transparent; border: none; color: #0f0; font-family: inherit; outline: none;" placeholder="Enter command...">
-//         </div>
-
-//     </div>
-
-// `;
-// }
-
-// <div class="terminal-container" style="height: 100%; display: flex; flex-direction: column; background: #000; color: #0f0; font-family: monospace;">
-//             <div class="terminal-output" style="flex: 1; padding: 8px 8px 0 8px; overflow-y: auto; white-space: pre-wrap;">MasegoOS Terminal v1.0\nType 'help' for available commands.\n</div>
-//             <div style="display: flex; align-items: center; padding-bottom: 8px;">
-//                 <span style="color: #0f0; padding: 0 8px;">$</span>
-//                 <input class="terminal-input" type="text" style="flex: 1; background: transparent; border: none; color: #0f0; outline: none; font-family: monospace;">
-//             </div>
-//         </div>
-
     createTerminalUI() {
         return `
-        <div class="terminal-container" style="height: 100%; display: flex; flex-direction: column; background: #000; color: #0f0; font-family: monospace;">
-            <div class="terminal-output" style="flex: 1; padding: 8px 8px 0 8px; overflow-y: auto; white-space: pre-wrap;">MasegoOS Terminal v1.0\nType 'help' for available commands.\n</div>
-            <div style="display: flex; align-items: center; padding-bottom: 8px;">
-                <span style="color: #0f0; padding: 0 8px;">$</span>
-                <input class="terminal-input" type="text" style="flex: 1; background: transparent; border: none; color: #0f0; outline: none; font-family: monospace;">
+             <div class="file-manager" style="height: 100%; display: flex; flex-direction: column;">
+            <div style="background: #333; padding: 8px; border-bottom: 1px solid #555; display: flex; align-items: center; gap: 8px;">
+                <button id="back-btn" style="background: #555; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">←</button>
+                <span id="current-path" style="flex: 1; color: #ccc;">/</span>
+                <button id="refresh-btn" style="background: #0078d4; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Refresh</button>
+            </div>
+            <div id="file-list" style="flex: 1; padding: 16px; overflow-y: auto;">
+                <div class="file-item" data-name="documents" data-type="folder" style="padding: 8px; margin: 4px 0; background: #333; border-radius: 4px; cursor: pointer; display: flex; align-items: center;">
+                    📁 <span style="margin-left: 8px;">documents</span>
+                </div>
+                <div class="file-item" data-name="readme.txt" data-type="file" style="padding: 8px; margin: 4px 0; background: #333; border-radius: 4px; cursor: pointer; display: flex; align-items: center;">
+                    📄 <span style="margin-left: 8px;">readme.txt</span>
+                </div>
+                <div class="file-item" data-name="notes.txt" data-type="file" style="padding: 8px; margin: 4px 0; background: #333; border-radius: 4px; cursor: pointer; display: flex; align-items: center;">
+                    📄 <span style="margin-left: 8px;">notes.txt</span>
+                </div>
             </div>
         </div>
         `;
@@ -629,24 +712,19 @@ export class ApplicationManager {
 
     createFileManagerUI() {
         return `
-        <div style="height: 100%; display: flex; flex-direction: column;">
-                <div style="background: #333; padding: 8px; border-bottom: 1px solid #555; display: flex; align-items: center; gap: 8px;">
-                    <button id="back-btn" style="background: #555; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">←</button>
-                    <span id="current-path" style="flex: 1; color: #ccc;">/</span>
-                    <button id="refresh-btn" style="background: #0078d4; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Refresh</button>
-                </div>
-                <div id="file-list" style="flex: 1; padding: 16px; overflow-y: auto;">
-                    <div class="file-item" style="padding: 8px; margin: 4px 0; background: #333; border-radius: 4px; cursor: pointer; display: flex; align-items: center;">
-                        📁 <span style="margin-left: 8px;">documents</span>
-                    </div>
-                    <div class="file-item" style="padding: 8px; margin: 4px 0; background: #333; border-radius: 4px; cursor: pointer; display: flex; align-items: center;">
-                        📄 <span style="margin-left: 8px;">readme.txt</span>
-                    </div>
-                    <div class="file-item" style="padding: 8px; margin: 4px 0; background: #333; border-radius: 4px; cursor: pointer; display: flex; align-items: center;">
-                        📄 <span style="margin-left: 8px;">notes.txt</span>
-                    </div>
-                </div>
-            </div>`
+        <div class="file-manager" style="height: 100%; display: flex; flex-direction: column;">
+            <div class="fm-toolbar" style="background: #333; padding: 8px; border-bottom: 1px solid #555; display: flex; align-items: center; gap: 8px;">
+                <button class="back-btn" style="background: #555; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">←</button>
+                <span class="current-path" style="flex: 1; color: #ccc;">/</span>
+                <button class="refresh-btn" style="background: #0078d4; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Refresh</button>
+                <button class="new-file-btn" style="background: #4CAF50; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">New File</button>
+                <button class="new-folder-btn" style="background: #9C27B0; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">New Folder</button>
+            </div>
+            <div class="file-list" style="flex: 1; padding: 16px; overflow-y: auto;">
+                <!-- Files/folders will be rendered dynamically -->
+            </div>
+        </div>
+        `
         ;
     }
 
