@@ -1,8 +1,9 @@
+console.log(`app Manager`)
 import { cpu } from "../CPU.js";
 import { ctors } from "../CPU.js";
 import { filesystemOps } from "../filesystem.js"; 
 import { Terminal } from "../terminal.js"
-import { EnhancedCalculator } from "./calculator.js"
+import { EnhancedCalculator } from "./calculato.js"
  
 // Application Manager - Handles dynamic UI injection and window management
 export class ApplicationManager {
@@ -292,7 +293,7 @@ export class ApplicationManager {
         
         if (display && buttons.length > 0) {
             // Import and initialize the enhanced calculator
-            import('./calculator.js').then(({ EnhancedCalculator }) => {
+            import('./calculato.js').then(({ EnhancedCalculator }) => {
                 const calculator = new EnhancedCalculator(display);
                 
                 buttons.forEach(button => {
@@ -308,17 +309,17 @@ export class ApplicationManager {
             }).catch(error => {
                 console.error('Failed to load calculator module:', error);
                 // Fallback to basic calculator if import fails
-                const calculator = new Calculator(display);  // Your original calculator
-                buttons.forEach(button => {
-                    button.addEventListener('click', () => {
-                        calculator.handleInput(button.dataset.value);
-                    });
-                });
+                // const calculator = new Calculator(display);  // Your original calculator
+                // buttons.forEach(button => {
+                //     button.addEventListener('click', () => {
+                //         calculator.handleInput(button.dataset.value);
+                //     });
+                // });
             });
         } else {
             console.error('Calculator elements not found');
         }
-    }, 100);
+    }, 500);
 }
 
 //terminal initialization

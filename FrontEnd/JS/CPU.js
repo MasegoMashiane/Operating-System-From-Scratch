@@ -754,4 +754,4 @@ Object.assign(cpu, processInit, threadsInit)
 //     { op: "printbx" },              // Prints: BX: 200
 //     { op: "halt" }
 // ];
-//run(stackExample)
+//run(stackExample)help

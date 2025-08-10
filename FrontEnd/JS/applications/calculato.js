@@ -1,6 +1,6 @@
 // Integrated calculator for OS emulator
-import { cpu } from "./CPU.js";
-import { ctors } from "./CPU.js";
+import { cpu } from "../CPU.js";
+import { ctors } from "../CPU.js";
 
 // Expression evaluator (shunting-yard -> RPN) - keeping the safe evaluation logic
 function tokenize(expr) {
@@ -99,7 +99,7 @@ function safeEvaluate(expr) {
     return evalRPN(rpn);
 }
 
-// Enhanced Calculator class that integrates with your OS
+// Enhanced Calculator class that integrates with OS
 export class EnhancedCalculator {
     constructor(displayElement) {
         this.displayElement = displayElement;
@@ -151,7 +151,8 @@ export class EnhancedCalculator {
     inputDigit(digit) {
         if (this.displayValue === '0' || this.displayValue === 'Error') {
             this.displayValue = digit;
-        } else {
+        } 
+        else {
             this.displayValue += digit;
         }
         this.isExpressionMode = true;
@@ -173,7 +174,10 @@ export class EnhancedCalculator {
     }
 
     inputParenthesis(paren) {
-        this.displayValue += paren;
+        if (this.displayValue === '0') {
+            this.displayValue = paren;
+        }else{
+        this.displayValue += paren;}
         this.isExpressionMode = true;
         this.updateDisplay();
     }
@@ -218,14 +222,14 @@ export class EnhancedCalculator {
         }
     }
 
-    // Integration with your CPU system
+    // Integration with CPU system
     copyToCPU() {
         if (this.lastResult === null) {
             console.log('No result to copy to CPU');
             return false;
         }
 
-        // Try to copy to AX register using your CPU system
+        // Try to copy to AX register using CPU system
         try {
             if (ctors && ctors.copy2ax) {
                 ctors.copy2ax(this.lastResult);
