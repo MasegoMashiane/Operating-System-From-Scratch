@@ -4,6 +4,7 @@ import { filesystemOps } from "../filesystem.js";
 import { Terminal } from "../terminal.js"
 import { EnhancedCalculator } from "./calculato.js"
 import { Notepad } from "./notepad.js";
+import { ProcessMonitor } from "./process manager.js";
 
 // Application Manager - Handles dynamic UI injection and window management
 export class ApplicationManager {
@@ -336,13 +337,6 @@ export class ApplicationManager {
                 console.log('✅ Enhanced Calculator initialized');
             }).catch(error => {
                 console.error('Failed to load calculator module:', error);
-                // Fallback to basic calculator if import fails
-                // const calculator = new Calculator(display);  // Your original calculator
-                // buttons.forEach(button => {
-                //     button.addEventListener('click', () => {
-                //         calculator.handleInput(button.dataset.value);
-                //     });
-                // });
             });
         } else {
             console.error('Calculator elements not found');
@@ -353,7 +347,7 @@ export class ApplicationManager {
 // File Manager initialization
 if (appName === 'filemanager') {
     const winData = this.openWindows.get(windowId);
-    const winEl = winData.element;
+    const winEl = windowEl;
 
     const fileListEl = winEl.querySelector('.file-list');
     const pathEl = winEl.querySelector('.current-path');
@@ -475,6 +469,18 @@ if (appName === 'filemanager') {
     renderDirectory();
 }
 
+//process Manger initialization
+if (appName === 'processmonitor') {
+    import('./process manager.js').then(({ ProcessMonitor }) => {
+        const listContainer = windowEl.querySelector('.process-list');
+        const refreshBtn = windowEl.querySelector('.refresh-btn');
+
+        const monitor = new ProcessMonitor(listContainer);
+        monitor.refreshList();
+
+        refreshBtn.addEventListener("click", () => monitor.refreshList());
+    });
+}
 
 //terminal initialization
         if (appName === 'terminal') {
@@ -687,22 +693,11 @@ if (appName === 'filemanager') {
 
     createTerminalUI() {
         return `
-             <div class="file-manager" style="height: 100%; display: flex; flex-direction: column;">
-            <div style="background: #333; padding: 8px; border-bottom: 1px solid #555; display: flex; align-items: center; gap: 8px;">
-                <button id="back-btn" style="background: #555; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">←</button>
-                <span id="current-path" style="flex: 1; color: #ccc;">/</span>
-                <button id="refresh-btn" style="background: #0078d4; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer;">Refresh</button>
-            </div>
-            <div id="file-list" style="flex: 1; padding: 16px; overflow-y: auto;">
-                <div class="file-item" data-name="documents" data-type="folder" style="padding: 8px; margin: 4px 0; background: #333; border-radius: 4px; cursor: pointer; display: flex; align-items: center;">
-                    📁 <span style="margin-left: 8px;">documents</span>
-                </div>
-                <div class="file-item" data-name="readme.txt" data-type="file" style="padding: 8px; margin: 4px 0; background: #333; border-radius: 4px; cursor: pointer; display: flex; align-items: center;">
-                    📄 <span style="margin-left: 8px;">readme.txt</span>
-                </div>
-                <div class="file-item" data-name="notes.txt" data-type="file" style="padding: 8px; margin: 4px 0; background: #333; border-radius: 4px; cursor: pointer; display: flex; align-items: center;">
-                    📄 <span style="margin-left: 8px;">notes.txt</span>
-                </div>
+             <div class="terminal-container" style="height: 100%; display: flex; flex-direction: column; background: #000; color: #0f0; font-family: monospace;">
+            <div class="terminal-output" style="flex: 1; padding: 8px 8px 0 8px; overflow-y: auto; white-space: pre-wrap;">MasegoOS Terminal v1.0\nType 'help' for available commands.\n</div>
+            <div style="display: flex; align-items: center; padding-bottom: 8px;">
+                <span style="color: #0f0; padding: 0 8px;">$</span>
+                <input class="terminal-input" type="text" style="flex: 1; background: transparent; border: none; color: #0f0; outline: none; font-family: monospace;">
             </div>
         </div>
         `;
@@ -730,33 +725,13 @@ if (appName === 'filemanager') {
 
     createProcessMonitorUI() {
         return `
-            <div style="height: 100%; display: flex; flex-direction: column;">
-                <div style="background: #333; padding: 8px; border-bottom: 1px solid #555;">
-                    <h3 style="margin: 0; color: white;">Process Monitor</h3>
-                </div>
-                <div style="flex: 1; padding: 16px; overflow-y: auto;">
-                    <table style="width: 100%; color: white; border-collapse: collapse;">
-                        <thead>
-                            <tr style="background: #444;">
-                                <th style="padding: 8px; text-align: left; border: 1px solid #555;">PID</th>
-                                <th style="padding: 8px; text-align: left; border: 1px solid #555;">State</th>
-                                <th style="padding: 8px; text-align: left; border: 1px solid #555;">IP</th>
-                                <th style="padding: 8px; text-align: left; border: 1px solid #555;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="process-table-body">
-                            <tr>
-                                <td style="padding: 8px; border: 1px solid #555;">1</td>
-                                <td style="padding: 8px; border: 1px solid #555;">running</td>
-                                <td style="padding: 8px; border: 1px solid #555;">5</td>
-                                <td style="padding: 8px; border: 1px solid #555;">
-                                    <button style="background: #ff4757; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Kill</button>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+            <div style="display: flex; flex-direction: column; height: 100%; background: #222; color: #fff; font-family: monospace;">
+            <div style="padding: 6px; background: #333; border-bottom: 1px solid #555; display: flex; justify-content: space-between;">
+                <span>Process Monitor</span>
+                <button class="refresh-btn" style="background: #0078d4; color: white; border: none; padding: 2px 8px; border-radius: 4px; cursor: pointer;">Refresh</button>
             </div>
+            <div class="process-list" style="flex: 1; overflow-y: auto; padding: 8px;"></div>
+        </div>
         `;
     }
 }
