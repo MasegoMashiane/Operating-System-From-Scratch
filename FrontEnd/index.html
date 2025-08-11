@@ -1,13 +1,121 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <link rel="stylesheet" href="/FrontEnd/CSS/main.css">
+    <title>My OS Boot</title>
 </head>
-<body><script type="module" src="/FrontEnd/JS/CPU.js"></script>
-    <script type="module">
-        import './JS/applications/appManager.js';
+<body>
+    <div id="setup">
+        <!-- Monitor -->
+        <div class="setup-height" id ="monitor">
+            <div id="border-outer">
+                <div id = "border-inner">
+                    <div class="screen-area" id="monitorScreen">
+                        Press the power button to start...
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Desktop Tower -->
+        <div class="setup-height" id="desktop-tower">
+            <div id="box-with-botton">
+                <div id="usb-port-box">
+                    <div class="USB" id="U1"><div class="insert" id="In1"></div></div>
+                    <div class="USB" id="U2"><div class="insert" id="In2"></div></div>
+                    <div class="USB" id="U3"><div class="insert" id="In3"></div></div>
+                </div>
+                <div class="power-button" id="powerBtn"></div>
+            <div id="speaker-box"></div>
+        </div>
+    </div>
+
+    <!-- POST beep sound -->
+    <audio id="postBeep" src="/FrontEnd/assets/49184-benkoning-appleiibooting_B9RcxtXY.wav" preload="auto"></audio>
+
+    <script>
+        const powerBtn = document.getElementById("powerBtn");
+        const screen = document.getElementById("monitorScreen");
+        const beep = document.getElementById("postBeep");
+
+        function playBeep() {
+            beep.currentTime = 0;
+            beep.play().catch(() => {});
+        }
+
+        function flickerEffect(duration, callback) {
+            screen.classList.add("flicker");
+            setTimeout(() => {
+                screen.classList.remove("flicker");
+                callback();
+            }, duration);
+        }
+
+        function biosSequence() {
+            screen.innerHTML = "";
+            const lines = [
+                "PhoenixBIOS v6.00PG, Release Date: 04/12/2025",
+                "CPU: Virtual 3.20GHz Detected",
+                "Memory Test: 8192K OK",
+                "Detecting IDE Drives ...",
+                "Primary Master: Virtual SSD 512GB",
+                "Primary Slave: None",
+                "Secondary Master: Virtual DVD-ROM",
+                "USB Devices: 1 Keyboard, 1 Mouse",
+                "Initializing OS Loader..."
+            ];
+
+            let i = 0;
+            const interval = setInterval(() => {
+                screen.innerHTML += lines[i] + "<br>";
+                i++;
+                if (i === lines.length) {
+                    clearInterval(interval);
+                    showLoadingBar();
+                }
+            }, 500);
+        }
+
+        function showLoadingBar() {
+            const bar = document.createElement("div");
+            bar.className = "progress-bar";
+            bar.innerHTML = '<div class="progress-fill" id="progressFill"></div>';
+            screen.appendChild(bar);
+
+            let width = 0;
+            const fill = document.getElementById("progressFill");
+            const loadInterval = setInterval(() => {
+                width += 5;
+                fill.style.width = width + "%";
+                if (width >= 100) {
+                    clearInterval(loadInterval);
+                    setTimeout(showSplashScreen, 500);
+                }
+            }, 100);
+        }
+
+        function showSplashScreen() {
+            screen.style.color = "#fff";
+            screen.innerHTML = `
+                <div class="splash-screen">
+                    <div class="splash-logo">Masego'S OS</div>
+                    <div class="spinner"></div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                screen.classList.add("fade-out");
+                setTimeout(() => {
+                    window.location.href = "appManager.html";
+                }, 1000);
+            }, 3000);
+        }
+
+        powerBtn.addEventListener("click", () => {
+            // First flicker + beep
+            playBeep();
+            flickerEffect(1500, biosSequence);
+        });
     </script>
 </body>
-</html>   
+</html>

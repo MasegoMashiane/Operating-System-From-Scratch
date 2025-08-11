@@ -5,6 +5,7 @@ import { Terminal } from "../terminal.js"
 import { EnhancedCalculator } from "./calculato.js"
 import { Notepad } from "./notepad.js";
 import { ProcessMonitor } from "./process manager.js";
+import { SnakeGame } from "./snake.js";
 
 // Application Manager - Handles dynamic UI injection and window management
 export class ApplicationManager {
@@ -20,7 +21,7 @@ export class ApplicationManager {
     }
 
     initializeDesktop() {
-        // Create desktop container if it doesn't exist
+        // Create desktop container
         let desktop = document.getElementById('desktop');
         if (!desktop) {
             desktop = document.createElement('div');
@@ -184,8 +185,19 @@ export class ApplicationManager {
         document.getElementById('desktop').appendChild(taskbar);
     }
 
+
+
     registerApplications() {
         // Register built-in applications
+        this.applications.set('snake', {
+        name: 'Snake',
+        icon: '🐍', 
+        width: 450,
+        height: 520,
+        createContent: () => this.createSnakeUI()
+        });
+
+
         this.applications.set('calculator', {
             name: 'Calculator',
             icon: '🧮',
@@ -280,6 +292,82 @@ export class ApplicationManager {
             </div>
         `;
 
+
+
+    // after rendering windowEl and storing openWindows...
+if (appName === 'snake') {
+    // Delay to ensure DOM nodes are created/attached
+    setTimeout(() => {
+        import('./snake.js').then(({ SnakeGame }) => {
+            const canvas = windowEl.querySelector('.snake-canvas');
+            const startBtn = windowEl.querySelector('.snake-start-btn');
+            const pauseBtn = windowEl.querySelector('.snake-pause-btn');
+            const resetBtn = windowEl.querySelector('.snake-reset-btn');
+            const scoreEl = windowEl.querySelector('.snake-score');
+
+            if (!canvas) {
+                console.error('Snake canvas not found in window', windowEl);
+                return;
+            }
+
+            // Create a wrapper object that holds the game inside the window-content element
+            const contentArea = windowEl.querySelector('.window-content') || windowEl; // adapt to your structure
+            const gameContainer = document.createElement('div');
+            gameContainer.style.width = '100%';
+            gameContainer.style.display = 'flex';
+            gameContainer.style.justifyContent = 'center';
+            // put canvas into container (canvas already in DOM inside createContent; we just use it)
+            // instantiate SnakeGame with the element that contains the canvas (the window content)
+            const snakeGame = new SnakeGame(contentArea, { width: canvas.width, height: canvas.height, gridSize: 20, fps: 10 });
+
+            // Try to attach the game to existing canvas element instead of building a new one
+            // (snakeGame built its own canvas; reuse the existing canvas,
+            // modify SnakeGame to accept an existing canvas element.)
+            // For simplicity use snakeGame.start/pause on the controls:
+
+            startBtn.addEventListener('click', () => snakeGame.start());
+            pauseBtn.addEventListener('click', () => snakeGame.pause());
+            resetBtn.addEventListener('click', () => {
+                snakeGame.kill();
+                // rebuild fresh state
+                setTimeout(() => {
+                    // create a new instance to reset UI cleanly
+                    // remove internal DOM and re-init
+                    const newGame = new SnakeGame(contentArea, { width: canvas.width, height: canvas.height, gridSize: 20, fps: 10 });
+                    // replace reference
+                    windowEl.snakeGameInstance = newGame;
+                    newGame.start();
+                }, 10);
+            });
+
+            // Start auto on open
+            snakeGame.start();
+
+            // Save instance for appManager (useful for close/minimize)
+            windowEl.snakeGameInstance = snakeGame;
+
+            // Wire minimize/close if you have buttons
+            const closeBtn = windowEl.querySelector('.window-control.control-close');
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    try { snakeGame.kill(); } catch (e) {}
+                });
+            }
+            const minimizeBtn = windowEl.querySelector('.window-control.control-minimize');
+            if (minimizeBtn) {
+                minimizeBtn.addEventListener('click', () => {
+                    snakeGame.pause();
+                });
+            }
+
+            console.log('✅ Snake game initialized');
+        }).catch(err => {
+            console.error('Failed to load snake module', err);
+        });
+    }, 0);
+}
+    
+
     //Notepad initialization
     if (appName === 'notepad') {
         import('./notepad.js').then(({ Notepad }) => {
@@ -343,6 +431,7 @@ export class ApplicationManager {
         }
     }, 500);
 }
+
 
 // File Manager initialization
 if (appName === 'filemanager') {
@@ -703,7 +792,27 @@ if (appName === 'processmonitor') {
         `;
     }
     
-    
+    createSnakeUI() {
+    return `
+    <div style="height:100%; display:flex; flex-direction:column; align-items:center; padding:12px; box-sizing:border-box; background:#111;">
+        <div style="flex:0 0 auto; display:flex; width:100%; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="color:#fff; font-family: monospace; font-size:14px;">Snake</div>
+            <div>
+                <button class="snake-start-btn" style="margin-right:8px;">Start</button>
+                <button class="snake-pause-btn" style="margin-right:8px;">Pause</button>
+                <button class="snake-reset-btn">Reset</button>
+            </div>
+        </div>
+        <div style="flex:1 1 auto; display:flex; align-items:center; justify-content:center; width:100%;">
+            <canvas class="snake-canvas" width="400" height="400" style="background:#000; border-radius:6px;"></canvas>
+        </div>
+        <div style="flex:0 0 auto; margin-top:8px; color:#fff; font-family:monospace;">
+            <span class="snake-score">Score: 0</span>
+        </div>
+    </div>
+    `;
+    }
+
 
     createFileManagerUI() {
         return `
@@ -743,5 +852,10 @@ document.addEventListener('DOMContentLoaded', () => {
     console.log('🖥️ Application Manager initialized');
 });
 
+
+export function initOS() {
+    console.log("Initializing OS...");
+    ApplicationManager.loadDesktopIcons;
+}
 // Export for use in other modules
 export { appManager };

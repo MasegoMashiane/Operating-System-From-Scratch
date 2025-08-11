@@ -1,0 +1,233 @@
+html{
+    height: 1024px;
+    width: 1440px;
+}
+body{
+        background: #737373;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        font-family: monospace;
+        color: #0f0;
+}
+
+#setup {
+position: absolute;
+top: 10%;
+display: flex;
+width: 1382px;
+gap: 50px;
+align-items: center;
+} 
+
+.setup-height{
+    height: 940px;
+}
+
+#monitor {
+    border-radius: 49px;
+    background-color: #D9D9D9;
+    position: relative;
+    width: 927px;
+    box-shadow: -13px -11px 5px -4px #00000080;
+}
+#border-outer{
+    width: 882.76px;
+    height: 896px;
+}
+#border-inner{
+    box-shadow: inset 10px 10px 16px #000000b7;
+
+    position: relative;
+    border-radius: 141px;
+    top: 5%;
+    left: 5%;
+    background-color: #474747;
+    width: 810.37px;
+    height: 838px;
+}
+.screen-area{
+    box-shadow: inset 14px 8px 8px 0 #0000004d;
+
+    position: relative;
+    border-radius: 102px;
+    top: 3%;
+    left: 3%;
+    height: 90%;
+    width: 90%;
+
+    padding: 1rem;
+    background: #202020;
+    color: rgba(0, 255, 0, 0.658);
+    font-size: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: center;
+    }
+
+
+
+    /* Flicker effect */
+.flicker {
+    animation: flickerAnim 0.15s infinite;
+    }
+    @keyframes flickerAnim {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+    }
+
+
+
+#desktop-tower {
+    border-radius: 30px;
+    background-color: #D9D9D9;
+    position: relative;
+    width: 435px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+#box-with-botton{
+    box-shadow: inset 8px 6px 12px 7px #0000004d;
+    border-radius: 41px;
+    position: relative;
+    height: 55%;
+    width: 85%;
+    left: 2rem;
+    top: 3rem;
+    display: flex;
+    flex-direction: column;
+    background-color: #C8C8C8;
+}
+#usb-port-box{
+    position: relative;
+    display: flex;
+    gap: 1rem;
+    flex-direction: column;
+    box-shadow: -5px 4px 17px 10px #0000004d;
+    top: 3rem;
+    left: 2rem;
+    background-color: #BCBCBC;
+    height: 368px; 
+    width: 142px;
+}
+.power-button {
+    box-shadow: -7px -2px 11px 5px #0000004d;
+    position: relative;
+    top: -12.5rem;
+    left: 15rem;
+    height: 120px;
+    width: 90px;
+    background: #D9D9D9;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+#U1{
+    box-shadow: inset 7px 11px 10px 0 #000000;
+    position: relative;
+    top: 2rem;
+    left: 1rem;
+    background-color: #3B3B3B;
+    height: 40px;
+    width: 25px;
+}
+#U2{
+    box-shadow: inset 7px 11px 10px 0 #000000;
+    position: relative;
+    top: 3rem;
+    left: 1rem;
+    background-color: #3B3B3B;
+    height: 40px;
+    width: 25px;
+}
+#U3{
+    box-shadow: inset 7px 11px 10px 0 #000000;
+    position: relative;
+    top: 4rem;
+    left: 1rem;
+    background-color: #3B3B3B;
+    height: 40px;
+    width: 25px;
+}
+#speaker-box{
+    border-radius: 42px;
+    position: relative;
+    top: 20rem;
+    background-color: #BCBCBC;
+    height: 55%;
+    width: 101%;
+}
+.insert{
+    box-shadow: inset 3px 11px 5px 0 #000000;
+    background-color: #656565;
+    height: 40px;
+    width: 10px;
+    margin-left: 0.5rem;
+}
+
+
+
+
+.power-button:hover {
+    background: #4caf50;
+}
+
+.progress-bar {
+    width: 100%;
+    background: #333;
+    height: 10px;
+    margin-top: 10px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: #0f0;
+    transition: width 0.2s linear;
+}
+
+.fade-out {
+    animation: fadeOut 1s forwards;
+}
+
+@keyframes fadeOut {
+    to { opacity: 0; }
+}
+
+/* Splash screen */
+.splash-screen {
+    width: 100%;
+    height: 100%;
+    background: #000;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.splash-logo {
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+.spinner {
+    border: 4px solid #444;
+    border-top: 4px solid #0f0;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

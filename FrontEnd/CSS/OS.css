@@ -1,0 +1,24 @@
+/* app windows */
+.app-window {position: absolute;
+    background: #222;
+    color: rgb(211, 187, 51); 
+    border-radius: 8px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.5);
+    overflow: hidden; }
+.window-content { 
+    padding: 12px;
+    background: #111; }
+
+.desktop {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    
+    background: #1e1e1e; /* or your wallpaper */
+}
+
+/* snake canvas */
+.snake-canvas { background: #000; display: block; border-radius: 6px; }
+.desktop-icon {
+    pointer-events: none; 
+}
