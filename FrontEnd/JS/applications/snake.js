@@ -150,7 +150,7 @@ export class SnakeGame {
     this.pause();
     // lightweight notification — you can replace this with an in-window modal
     setTimeout(() => {
-      // simple alert is fine; apps usually avoid global alert in real UI, but it's concise
+      // simple alert is fine; apps usually avoid global alert in real UI
       alert(`Game Over — Score: ${this.score}`);
       this._resetGameState();
       this.start(); // auto restart after game over
@@ -193,7 +193,7 @@ export class SnakeGame {
 
   // Optional placeholder program to register with a scheduler
   _dummyProgram() {
-    // small "program" array compatible with your ctors if you have them
+    // small "program" array compatible with ctors if you have them
     return [{ op: 'noop' }, { op: 'noop' }, { op: 'noop' }];
   }
 }

@@ -10,7 +10,7 @@ export class Notepad {
         const dir = getDir();
         if (dir[filename] && !confirm(`File "${filename}" exists. Overwrite?`)) return false;
         dir[filename] = this.textarea.value;
-        alert(`✅ File "${filename}" saved successfully.`);
+        alert(` File "${filename}" saved successfully.`);
         return true;
     }
 
@@ -33,12 +33,12 @@ export class Notepad {
     deleteFile(filename) {
         const dir = getDir();
         if (!(filename in dir)) {
-            alert(`❌ File "${filename}" not found.`);
+            alert(` File "${filename}" not found.`);
             return false;
         }
         if (confirm(`Are you sure you want to delete "${filename}"?`)) {
             delete dir[filename];
-            alert(`🗑️ File "${filename}" deleted.`);
+            alert(` File "${filename}" deleted.`);
             return true;
         }
         return false;

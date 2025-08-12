@@ -2,7 +2,7 @@ import { cpu } from "./CPU.js";
 //OS Gui interface(start menu, taskbar, etc)
 
 //Portfolio App Registration for OS
-(function() {
+export function Portfolio() {
     // Portfolio App Icon (SVG as Data URI for demo)
     const icon = `
     <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -129,11 +129,11 @@ import { cpu } from "./CPU.js";
     } else if (window.appManager && window.appManager.registerApp) {
         window.appManager.registerApp({
             name: 'Portfolio',
-            icon: icon,
+            icon: "📁",
             launch: launchPortfolioApp
         });
     } else {
         // Fallback: add to global for manual launch
         window.launchPortfolioApp = launchPortfolioApp;
     }
-})();
+}

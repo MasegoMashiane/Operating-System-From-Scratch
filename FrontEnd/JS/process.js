@@ -2,7 +2,7 @@ import { cpu } from "./CPU.js";
 import { ctors } from "./CPU.js";
 //process management
 
-// A process is like a running program. It,s your code 
+// A process is like a running program. It's your code 
 // actively executing on the cpu. 
 
 // Program => Blueprint
@@ -192,7 +192,7 @@ export function schedule(){
 //     cpu.ip++
 // }
 
-// It is like saving your progress in one game, then loading your progress
+// It is like saving progress in one game, then loading progress
 // in another game.
 // The cpu needs to:
 // Save the current process's state(reg, Ip, ...)

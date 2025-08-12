@@ -18,6 +18,7 @@ export class ApplicationManager {
         // Initialize the desktop container
         this.initializeDesktop();
         this.registerApplications();
+        this.renderDesktopIcons();
     }
 
     initializeDesktop() {
@@ -187,6 +188,39 @@ export class ApplicationManager {
 
 
 
+
+
+    renderDesktopIcons() {
+        const desktop = document.getElementById('desktop');
+        if (!desktop) return;
+    
+        // Remove any existing icons to avoid duplicates
+        desktop.querySelectorAll('.desktop-icon').forEach(icon => icon.remove());
+    
+        let col = 0, row = 0;
+        const maxRows = 5; // Adjust for desktop size
+    
+        for (const [appName, app] of this.applications.entries()) {
+            const icon = document.createElement('div');
+            icon.className = 'desktop-icon';
+            icon.innerHTML = `
+                <div class ="Icon-Container">
+                <div class="desktop-icon-emoji">${app.icon}</div>
+                <div class="desktop-icon-label">${app.name}</div>
+                </div>
+            `;
+            icon.style.left = `${32 + col * 90}px`;
+            icon.style.top = `${32 + row * 90}px`;
+            icon.style.position = 'absolute';
+    
+            icon.addEventListener('dblclick', () => this.launchApplication(appName));
+            desktop.appendChild(icon);
+    
+            row++;
+            if (row >= maxRows) { row = 0; col++; }
+        }
+    }
+
     registerApplications() {
         // Register built-in applications
         this.applications.set('snake', {
@@ -259,7 +293,7 @@ export class ApplicationManager {
 
         // Create new window
         const windowId = this.createWindow(app, appName);
-        console.log(`🚀 Launched ${app.name} (Window ID: ${windowId})`);
+        console.log(`Launched ${app.name} (Window ID: ${windowId})`);
     }
 
     createWindow(app, appName) {
@@ -311,7 +345,7 @@ if (appName === 'snake') {
             }
 
             // Create a wrapper object that holds the game inside the window-content element
-            const contentArea = windowEl.querySelector('.window-content') || windowEl; // adapt to your structure
+            const contentArea = windowEl.querySelector('.window-content') || windowEl; // adapt to structure
             const gameContainer = document.createElement('div');
             gameContainer.style.width = '100%';
             gameContainer.style.display = 'flex';
@@ -346,7 +380,7 @@ if (appName === 'snake') {
             // Save instance for appManager (useful for close/minimize)
             windowEl.snakeGameInstance = snakeGame;
 
-            // Wire minimize/close if you have buttons
+            // Wire minimize/close if buttons
             const closeBtn = windowEl.querySelector('.window-control.control-close');
             if (closeBtn) {
                 closeBtn.addEventListener('click', () => {
@@ -360,7 +394,7 @@ if (appName === 'snake') {
                 });
             }
 
-            console.log('✅ Snake game initialized');
+            console.log('Snake game initialized');
         }).catch(err => {
             console.error('Failed to load snake module', err);
         });
@@ -422,7 +456,7 @@ if (appName === 'snake') {
                 // Store calculator instance for potential future use
                 windowEl.calculatorInstance = calculator;
                 
-                console.log('✅ Enhanced Calculator initialized');
+                console.log('Enhanced Calculator initialized');
             }).catch(error => {
                 console.error('Failed to load calculator module:', error);
             });
@@ -678,7 +712,7 @@ if (appName === 'processmonitor') {
             }else{
                 console.warn(`Invalid or missing appName for window ${windowId}`)
             }
-            console.log(`🗑️ Closed window ${windowId}`);
+            console.log(` Closed window ${windowId}`);
         }
     }
 
@@ -849,13 +883,8 @@ if (appName === 'processmonitor') {
 let appManager;
 document.addEventListener('DOMContentLoaded', () => {
     appManager = new ApplicationManager();
-    console.log('🖥️ Application Manager initialized');
+    console.log(' Application Manager initialized');
 });
 
-
-export function initOS() {
-    console.log("Initializing OS...");
-    ApplicationManager.loadDesktopIcons;
-}
 // Export for use in other modules
 export { appManager };
