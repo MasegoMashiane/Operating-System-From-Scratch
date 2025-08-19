@@ -6,6 +6,7 @@ import { EnhancedCalculator } from "./calculato.js"
 import { Notepad } from "./notepad.js";
 import { ProcessMonitor } from "./process manager.js";
 import { SnakeGame } from "./snake.js";
+import { initPortfolio } from "./Portfolio.js";
 
 // Application Manager - Handles dynamic UI injection and window management
 export class ApplicationManager {
@@ -264,12 +265,21 @@ export class ApplicationManager {
             createContent: () => this.createFileManagerUI()
         });
 
+
         this.applications.set('processmonitor', {
             name: 'Process Monitor',
             icon: '⚙️',
             width: 700,
             height: 500,
             createContent: () => this.createProcessMonitorUI()
+        });
+
+        this.applications.set('portfolio', {
+            name: 'Portfolio',
+            icon: '📄',
+            width: 800,
+            height: 600,
+            createContent: () => this.createPortfolioUI()
         });
     }
 
@@ -326,6 +336,18 @@ export class ApplicationManager {
             </div>
         `;
 
+        const contentArea = windowEl.querySelector(`#content-${windowId}`);
+        if (appName === 'portfolio') {
+            setTimeout(() => {
+                import('./Portfolio.js').then(({ initPortfolio }) => {
+                    initPortfolio({ createWindow: () => ({ content: contentArea }) });
+                }).catch(err => {
+                    console.error('Failed to load portfolio module', err);
+                });
+            }, 0);
+        } else {
+            contentArea.innerHTML = app.createContent();
+        }
 
 
     // after rendering windowEl and storing openWindows...
@@ -401,7 +423,6 @@ if (appName === 'snake') {
     }, 0);
 }
     
-
     //Notepad initialization
     if (appName === 'notepad') {
         import('./notepad.js').then(({ Notepad }) => {
@@ -875,6 +896,12 @@ if (appName === 'processmonitor') {
             </div>
             <div class="process-list" style="flex: 1; overflow-y: auto; padding: 8px;"></div>
         </div>
+        `;
+    }
+
+    createPortfolioUI() {
+        return `
+            <div class="portfolio-container" id="portfolio-content"></div>
         `;
     }
 }
