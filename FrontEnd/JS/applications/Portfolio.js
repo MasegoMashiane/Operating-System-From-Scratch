@@ -206,10 +206,10 @@ export function initPortfolio(windowManager) {
                 <h2>Projects</h2>
                 <h3>JavaScript OS Emulator</h3>
                 <p>A modular operating system emulator built with JavaScript, featuring app loading, memory simulation, GUI terminal, and process handling. Demonstrates proficiency in JavaScript, DOM manipulation, and system design.</p>
-                <p><a href="https://github.com/MasegoMashiane/os-emulator" target="_blank">View on GitHub</a></p>
+                <p><a href="https://github.com/MasegoMashiane/Operating-System-From-Scratch" target="_blank">View on GitHub</a></p>
                 <h3>Cognitive Behavioral Therapy App (In Progress)</h3>
                 <p>A web application integrating cognitive behavioral theory with ethical software development, aimed at mental health support. Built with Django, JavaScript, and MongoDB.</p>
-                <p><a href="https://github.com/MasegoMashiane/cbt-app" target="_blank">View on GitHub</a></p>
+                <p><a href="https://github.com/MasegoMashiane" target="_blank">View on GitHub</a></p>
             </div>
             <div class="tab-content" id="swot">
                 <h2>SWOT Analysis</h2>
