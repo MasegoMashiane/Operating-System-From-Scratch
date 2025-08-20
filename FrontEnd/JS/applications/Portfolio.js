@@ -12,6 +12,8 @@ export function initPortfolio(windowManager) {
     container.innerHTML = `
         <style>
             .portfolio-container {
+                position: relative;
+                bottom: 1.5rem;
                 font-family: 'Segoe UI', Arial, sans-serif;
                 color: #fff;
                 overflow-y: auto;
