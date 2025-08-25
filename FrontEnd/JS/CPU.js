@@ -49,11 +49,21 @@ export const cpu = {
 //Supports commands like mkdir, cd, ls, write, read, and rm
     
 fs: {
-        root:{}
+        root:{
+            Documents: {},
+            Pictures: {
+                "sample1.jpg": "./assets/Screenshot_20250825_101105_Instagram.jpg",  // path or base64
+                "sample2.png": "./assets/Screenshot_20250825_101057_Instagram.jpg",
+                "sample3.png": "./assets/Screenshot_20250825_101126_Instagram.jpg",
+                "sample4.png": "./assets/Screenshot_20250825_101144_Instagram.jpg",
+                "sample5.png": "./assets/Screenshot_20250825_101215_Instagram.jpg"
+            },
+            Music: {},
+        }
     },
 //current working directory path (e.g., ['home','user'])
-cwd: []
-
+cwd: [],
+ip: 0   
 };
 
 

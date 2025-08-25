@@ -7,8 +7,35 @@ import { cpu } from "./CPU.js";
 //validate memory bounds to avoid errors
 
 //Store value from register to memory
+
+
+//add memory allocation tracking
+let memoryMap = new Array(256).fill(null); //tracks allocated blocks 
+
 export const memoryOperations = {
    
+    //allocate a block of memory
+    malloc: (size) => {
+        if (size <= 0 || size > 256) return null
+         
+        let start = -1
+        let count = 0
+
+        for (let i = 0; i < 256; i++){
+            if (memoryMap[i]===null){
+                if (start === -1){ start = i
+                    count++
+                }
+                if (count === size){
+                    //mark block as allocated
+                    
+
+                }
+            }
+        }
+
+    },
+
     StoreMem: ({ addr, reg}) => {
         if (addr >= 0 && addr < cpu.memory.length){
             cpu.memory[addr] = cpu[reg];

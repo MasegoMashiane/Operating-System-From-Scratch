@@ -6,7 +6,7 @@ export function getDir(){
     let dir = cpu.fs.root
     
     for (const folder of cpu.cwd){
-        if  (!(folder in dir)) throw new Error(`Directory not found: ${folder}`)
+        if (!(folder in dir)) throw new Error (`Directory not found: ${folder}`)
         dir = dir[folder]
     }
     return dir

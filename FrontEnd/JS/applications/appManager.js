@@ -2,6 +2,7 @@ import { cpu } from "../CPU.js"
 import { getDir } from "../filesystem.js";
 import { filesystemOps } from "../filesystem.js"; 
 import { Terminal } from "../terminal.js"
+import { ThumbnailGenerator, FileManager } from "./fileManager.js";
 import { EnhancedCalculator } from "./calculato.js"
 import { Notepad } from "./notepad.js";
 import { ProcessMonitor } from "./process manager.js";
@@ -224,14 +225,22 @@ export class ApplicationManager {
 
     registerApplications() {
         // Register built-in applications
+        
         this.applications.set('snake', {
-        name: 'Snake',
-        icon: '🐍', 
-        width: 450,
-        height: 520,
-        createContent: () => this.createSnakeUI()
+            name: 'Snake',
+            icon: '🐍', 
+            width: 450,
+            height: 520,
+            createContent: () => this.createSnakeUI()
         });
 
+        this.applications.set('gallery', {
+            name: 'Gallery',
+            icon: '🖼️',
+            width: 800,
+            hegiht: 600,
+            createContent: () => this.createGalleryUI()
+        });
 
         this.applications.set('calculator', {
             name: 'Calculator',
@@ -262,9 +271,9 @@ export class ApplicationManager {
             icon: '📁',
             width: 600,
             height: 500,
-            createContent: () => this.createFileManagerUI()
+            createContent: (container) => this.createFileManagerUI(container)
+                
         });
-
 
         this.applications.set('processmonitor', {
             name: 'Process Monitor',
@@ -351,7 +360,15 @@ export class ApplicationManager {
 
 
     // after rendering windowEl and storing openWindows...
-if (appName === 'snake') {
+
+    if(appName === 'gallery'){
+        import('./gallery.js').then(({ initGallery }) => {
+            const container = windowEl.querySelector('.gallery-container');
+            initGallery(container);
+        });
+    }
+
+    if (appName === 'snake'){
     // Delay to ensure DOM nodes are created/attached
     setTimeout(() => {
         import('./snake.js').then(({ SnakeGame }) => {
@@ -515,6 +532,7 @@ if (appName === 'filemanager') {
             fileListEl.appendChild(item);
         });
     };
+
 
     const openFolder = (folderName) => {
         cpu.cwd.push(folderName);
@@ -791,7 +809,16 @@ if (appName === 'processmonitor') {
     }
 
     // Application UI Creators
-        createCalculatorUI() {
+
+    createGalleryUI(){
+        return `
+            <div class="gallery-container">
+            <div class="loading">Loading images...</div>
+            </div>
+        `
+    }
+
+    createCalculatorUI() {
     return `
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 280px;">
             <div id="calc-display" style="grid-column: 1/-1; background: #000; color: #0f0; padding: 16px; text-align: right; font-family: monospace; font-size: 18px; border-radius: 4px; min-height: 40px;">0</div>

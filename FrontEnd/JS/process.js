@@ -50,7 +50,6 @@ export const processOp = {
             createdAt: Date.now(),
             instructionExecuted: 0,
             lastExecuted: 0 
-            //
 
         }
         cpu.processes.push(process)
@@ -85,7 +84,7 @@ export function schedule(){
     const readyProcs = cpu.processes.filter(p => p.state === "ready")
     
 
-    // if (readyProcs.length === 0 ) return //no processes to run
+    // if (readyProcs.length === 0) return //no processes to run
 
     // // Round robin scheduling: pick next process to run
     // const currentIndex = readyProcs.findIndex(p => p.pid === cpu.currentPID)
